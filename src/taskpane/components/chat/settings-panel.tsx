@@ -10,7 +10,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   buildAuthorizationUrl,
   exchangeOAuthCode,
@@ -32,6 +32,18 @@ import { loadWebConfig, saveWebConfig } from "../../../lib/web/config";
 import { listFetchProviders } from "../../../lib/web/fetch";
 import { listSearchProviders } from "../../../lib/web/search";
 import { useChat } from "./chat-context";
+import {
+  loadMcpServers,
+  saveMcpServers,
+  removeMcpServer,
+  updateMcpServer,
+  type McpServerConfig,
+} from "../../../lib/mcp/mcp-config";
+import {
+  pingMcpServer,
+  mcpToolToAgentTool,
+  type McpToolDef,
+} from "../../../lib/mcp/mcp-client";
 
 function SkillsSection() {
   const { state, installSkill, uninstallSkill } = useChat();
@@ -165,7 +177,7 @@ function SkillsSection() {
 }
 
 export function SettingsPanel() {
-  const { state, setProviderConfig, availableProviders, getModelsForProvider } =
+  const { state, setProviderConfig, availableProviders, getModelsForProvider, setMcpTools, updateServerMcpTools, removeServerMcpTools } =
     useChat();
 
   const [saved] = useState(loadSavedConfig);
@@ -203,6 +215,86 @@ export function SettingsPanel() {
   );
   const [exaApiKey, setExaApiKey] = useState(() => savedWeb.apiKeys.exa || "");
   const [showAdvancedWebKeys, setShowAdvancedWebKeys] = useState(false);
+
+  // MCP multi-server state
+  type McpStatus =
+    | { step: "idle" }
+    | { step: "connecting" }
+    | { step: "connected"; toolCount: number; tools: McpToolDef[] }
+    | { step: "error"; message: string };
+
+  const [mcpServers, setMcpServers] = useState<McpServerConfig[]>(loadMcpServers);
+  const [mcpStatuses, setMcpStatuses] = useState<Record<string, McpStatus>>(
+    () =>
+      Object.fromEntries(
+        loadMcpServers().map((s) => {
+          // If a server was enabled, ChatProvider auto-connected it on startup.
+          // Show "connected" initially so the badge doesn't incorrectly say "idle".
+          const initialStatus: McpStatus = s.enabled
+            ? { step: "connected", toolCount: state.mcpTools.length, tools: [] }
+            : { step: "idle" };
+          return [s.id, initialStatus];
+        }),
+      ),
+  );
+  const [newMcpUrl, setNewMcpUrl] = useState("");
+
+  const setServerStatus = (id: string, status: McpStatus) =>
+    setMcpStatuses((prev) => ({ ...prev, [id]: status }));
+
+  const handleMcpConnect = async (server: McpServerConfig) => {
+    const url = server.url.trim();
+    if (!url) return;
+    setServerStatus(server.id, { step: "connecting" });
+    const result = await pingMcpServer(url);
+    if (result.ok && result.tools) {
+      const agentTools = result.tools.map((t) => mcpToolToAgentTool(t, url));
+      updateServerMcpTools(server.id, agentTools);
+      updateMcpServer(server.id, { enabled: true });
+      setServerStatus(server.id, { step: "connected", toolCount: result.toolCount ?? 0, tools: result.tools });
+    } else {
+      removeServerMcpTools(server.id);
+      setServerStatus(server.id, { step: "error", message: result.error ?? "Could not connect" });
+    }
+  };
+
+  const handleMcpDisconnect = (server: McpServerConfig) => {
+    removeServerMcpTools(server.id);
+    updateMcpServer(server.id, { enabled: false });
+    setServerStatus(server.id, { step: "idle" });
+  };
+
+  const handleAddServer = () => {
+    const url = newMcpUrl.trim();
+    if (!url) return;
+    // Prevent adding the same URL twice
+    if (mcpServers.some((s) => s.url.trim() === url)) {
+      alert(`Server "${url}" is already in the list.`);
+      return;
+    }
+    const id = crypto.randomUUID();
+    const server: McpServerConfig = { id, url, enabled: false };
+    const next = [...mcpServers, server];
+    setMcpServers(next);
+    saveMcpServers(next);
+    setMcpStatuses((prev) => ({ ...prev, [id]: { step: "idle" } }));
+    setNewMcpUrl("");
+  };
+
+  const handleRemoveServer = (server: McpServerConfig) => {
+    removeServerMcpTools(server.id);
+    removeMcpServer(server.id);
+    setMcpServers((prev) => prev.filter((s) => s.id !== server.id));
+    setMcpStatuses((prev) => {
+      const next = { ...prev };
+      delete next[server.id];
+      return next;
+    });
+  };
+
+  // Note: Auto-connect for enabled servers is handled by ChatProvider on mount.
+  // SettingsPanel only manages the UI status badge (showing "connecting" / "connected" / "error")
+  // for servers the user interacts with in this session.
 
   // OAuth flow state
   const [oauthFlow, setOauthFlow] = useState<OAuthFlowState>(() => {
@@ -1021,6 +1113,136 @@ export function SettingsPanel() {
         </div>
       </div>
 
+      {/* MCP Server */}
+      <div className="border-t border-(--chat-border) pt-4">
+        <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted) mb-4">
+          mcp servers
+        </div>
+
+        <div className="space-y-3">
+          {/* Existing server rows */}
+          {mcpServers.length > 0 && (
+            <div className="space-y-2">
+              {mcpServers.map((server) => {
+                const status: McpStatus = mcpStatuses[server.id] ?? { step: "idle" };
+                return (
+                  <div
+                    key={server.id}
+                    className="border border-(--chat-border) bg-(--chat-input-bg) p-2.5 space-y-2"
+                    style={{ borderRadius: "var(--chat-radius)" }}
+                  >
+                    {/* URL + action buttons row */}
+                    <div className="flex gap-1">
+                      <span className="flex-1 text-xs text-(--chat-text-primary) truncate py-1.5 px-1" title={server.url}>
+                        {server.url}
+                      </span>
+                      {status.step === "connected" ? (
+                        <button
+                          type="button"
+                          onClick={() => handleMcpDisconnect(server)}
+                          className="px-2.5 py-1.5 text-xs bg-(--chat-bg) border border-(--chat-border)
+                                     text-(--chat-text-secondary) hover:border-(--chat-error)
+                                     hover:text-(--chat-error) transition-colors shrink-0"
+                          style={{ borderRadius: "var(--chat-radius)" }}
+                        >
+                          Disconnect
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleMcpConnect(server)}
+                          disabled={status.step === "connecting"}
+                          className="px-2.5 py-1.5 text-xs bg-(--chat-accent) border border-(--chat-accent)
+                                     text-white hover:opacity-90
+                                     disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+                          style={{ borderRadius: "var(--chat-radius)" }}
+                        >
+                          {status.step === "connecting" ? "Connecting…" : "Connect"}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveServer(server)}
+                        className="p-1.5 text-(--chat-text-muted) hover:text-(--chat-error) transition-colors shrink-0"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+
+                    {/* Connected: tool list */}
+                    {status.step === "connected" && (
+                      <div className="text-[10px] space-y-0.5">
+                        <div className="flex items-center gap-1.5 text-(--chat-text-secondary)">
+                          <Check size={10} className="text-(--chat-success)" />
+                          {status.toolCount} tool{status.toolCount !== 1 ? "s" : ""} loaded
+                        </div>
+                        {status.tools.length > 0 && (
+                          <ul className="pl-4 space-y-0.5">
+                            {status.tools.map((t) => (
+                              <li key={t.name} className="text-(--chat-text-muted) truncate">
+                                • {t.name}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Error */}
+                    {status.step === "error" && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-(--chat-error) truncate">
+                          {status.message}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleMcpConnect(server)}
+                          className="text-[10px] text-(--chat-text-muted) hover:text-(--chat-text-secondary) ml-2 shrink-0 transition-colors"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Add new server */}
+          <div className="flex gap-1">
+            <input
+              type="text"
+              value={newMcpUrl}
+              onChange={(e) => setNewMcpUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
+              placeholder="https://xxx.ngrok-free.app"
+              className="flex-1 bg-(--chat-input-bg) text-(--chat-text-primary)
+                         text-sm px-3 py-2 border border-(--chat-border)
+                         placeholder:text-(--chat-text-muted)
+                         focus:outline-none focus:border-(--chat-border-active)"
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={handleAddServer}
+              disabled={!newMcpUrl.trim()}
+              className="px-3 py-2 text-xs bg-(--chat-input-bg) border border-(--chat-border)
+                         text-(--chat-text-secondary) hover:border-(--chat-border-active)
+                         hover:text-(--chat-text-primary)
+                         disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{ borderRadius: "var(--chat-radius)" }}
+            >
+              <Plus size={12} />
+            </button>
+          </div>
+
+          <p className="text-[10px] text-(--chat-text-muted)">
+            Add URL then click Connect. Servers must allow CORS or use the CORS proxy above.
+          </p>
+        </div>
+      </div>
+
       {/* Status */}
       <div className="border-t border-(--chat-border) pt-4">
         <div className="flex items-center gap-2 text-xs">
@@ -1054,7 +1276,7 @@ export function SettingsPanel() {
           about
         </div>
         <p className="text-xs text-(--chat-text-secondary) leading-relaxed">
-          OpenExcel uses your own API key to connect to LLM providers. Your key
+          ExcelOS uses your own API key to connect to LLM providers. Your key
           is stored locally in the browser.
         </p>
         {isCustom && (

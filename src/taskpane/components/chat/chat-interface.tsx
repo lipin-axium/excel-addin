@@ -320,7 +320,7 @@ function ChatHeader({
             Settings
           </TabButton>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center pr-6">
           {activeTab === "chat" && (
             <button
               type="button"
@@ -330,11 +330,6 @@ function ChatHeader({
                   ? "text-(--chat-accent) hover:text-(--chat-text-primary)"
                   : "text-(--chat-text-muted) hover:text-(--chat-text-primary)"
               }`}
-              title={
-                followMode
-                  ? "Follow mode: ON - Click to disable"
-                  : "Follow mode: OFF - Click to enable"
-              }
             >
               {followMode ? <Eye size={14} /> : <EyeOff size={14} />}
             </button>
@@ -343,9 +338,6 @@ function ChatHeader({
             type="button"
             onClick={onThemeToggle}
             className="p-1.5 text-(--chat-text-muted) hover:text-(--chat-text-primary) transition-colors"
-            title={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-            }
           >
             {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
           </button>

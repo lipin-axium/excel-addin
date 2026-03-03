@@ -65,6 +65,13 @@ import {
 } from "../../../lib/storage";
 import { EXCEL_TOOLS } from "../../../lib/tools";
 import {
+  fetchMcpTools,
+  mcpToolToAgentTool,
+  pingMcpServer,
+} from "../../../lib/mcp/mcp-client";
+import { loadMcpServers, updateMcpServer } from "../../../lib/mcp/mcp-config";
+import type { AgentTool } from "@mariozechner/pi-agent-core";
+import {
   deleteFile,
   listUploads,
   resetVfs,
@@ -111,6 +118,7 @@ interface ChatState {
   uploads: UploadedFile[];
   isUploading: boolean;
   skills: SkillMeta[];
+  mcpTools: AgentTool[];
 }
 
 const INITIAL_STATS: SessionStats = { ...deriveStats([]), contextWindow: 0 };
@@ -132,11 +140,22 @@ interface ChatContextValue {
   removeUpload: (name: string) => Promise<void>;
   installSkill: (files: File[]) => Promise<void>;
   uninstallSkill: (name: string) => Promise<void>;
+  setMcpTools: (tools: AgentTool[]) => void;
+  updateServerMcpTools: (serverId: string, tools: AgentTool[]) => void;
+  removeServerMcpTools: (serverId: string) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
 
-function buildSystemPrompt(skills: SkillMeta[]): string {
+function buildMcpToolsSection(mcpTools: AgentTool[]): string {
+  if (mcpTools.length === 0) return "";
+  const lines = mcpTools.map(
+    (t) => `- ${t.name}${t.description ? `: ${t.description}` : ""}`,
+  );
+  return `\nMCP TOOLS (external servers):\n${lines.join("\n")}\n`;
+}
+
+function buildSystemPrompt(skills: SkillMeta[], mcpTools: AgentTool[] = []): string {
   return `You are an AI assistant integrated into Microsoft Excel with full access to read and modify spreadsheet data.
 
 Available tools:
@@ -195,10 +214,11 @@ Citations: Use markdown links with #cite: hash to reference sheets/cells. Clicki
 Example: [Exchange Ratio](#cite:3) or [see cell B5](#cite:3!B5)
 
 When the user asks about their data, read it first. Be concise. Use A1 notation for cell references.
-
+${buildMcpToolsSection(mcpTools)}
 ${buildSkillsPromptSection(skills)}
 `;
 }
+
 
 function thinkingLevelToAgent(level: ThinkingLevel): AgentThinkingLevel {
   return level === "none" ? "off" : level;
@@ -221,6 +241,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       uploads: [],
       isUploading: false,
       skills: [],
+      mcpTools: [],
     };
   });
 
@@ -233,6 +254,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const currentSessionIdRef = useRef<string | null>(null);
   const followModeRef = useRef(state.providerConfig?.followMode ?? true);
   const skillsRef = useRef<SkillMeta[]>([]);
+  const mcpToolsRef = useRef<Map<string, AgentTool[]>>(new Map());
 
   const availableProviders = getProviders();
 
@@ -523,7 +545,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         agentRef.current.abort();
       }
 
-      const systemPrompt = buildSystemPrompt(skillsRef.current);
+      const allMcpTools = Array.from(mcpToolsRef.current.values()).flat();
+      const systemPrompt = buildSystemPrompt(skillsRef.current, allMcpTools);
       console.log(
         "[Chat] Skills in prompt:",
         skillsRef.current.length,
@@ -536,7 +559,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           model: proxiedModel,
           systemPrompt,
           thinkingLevel: thinkingLevelToAgent(config.thinking),
-          tools: EXCEL_TOOLS,
+          tools: [...EXCEL_TOOLS, ...Array.from(mcpToolsRef.current.values()).flat()],
           messages: existingMessages,
         },
         streamFn: async (model, context, options) => {
@@ -569,6 +592,37 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }));
     },
     [handleAgentEvent, getActiveApiKey],
+  );
+
+  const setMcpTools = useCallback(
+    (tools: AgentTool[]) => {
+      // Legacy single-server compat: store under key "default"
+      mcpToolsRef.current.set("default", tools);
+      const flat = Array.from(mcpToolsRef.current.values()).flat();
+      setState((prev) => ({ ...prev, mcpTools: flat }));
+      if (configRef.current) applyConfig(configRef.current);
+    },
+    [applyConfig],
+  );
+
+  const updateServerMcpTools = useCallback(
+    (serverId: string, tools: AgentTool[]) => {
+      mcpToolsRef.current.set(serverId, tools);
+      const flat = Array.from(mcpToolsRef.current.values()).flat();
+      setState((prev) => ({ ...prev, mcpTools: flat }));
+      if (configRef.current) applyConfig(configRef.current);
+    },
+    [applyConfig],
+  );
+
+  const removeServerMcpTools = useCallback(
+    (serverId: string) => {
+      mcpToolsRef.current.delete(serverId);
+      const flat = Array.from(mcpToolsRef.current.values()).flat();
+      setState((prev) => ({ ...prev, mcpTools: flat }));
+      if (configRef.current) applyConfig(configRef.current);
+    },
+    [applyConfig],
   );
 
   const setProviderConfig = useCallback(
@@ -848,6 +902,44 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Auto-connect MCP servers that were enabled in a previous session.
+  // This runs at ChatProvider mount (app start), not inside SettingsPanel,
+  // so tools are available even if the user never opens the Settings tab.
+  useEffect(() => {
+    const servers = loadMcpServers().filter((s) => s.enabled && s.url);
+    if (servers.length === 0) return;
+    (async () => {
+      for (const server of servers) {
+        try {
+          const result = await pingMcpServer(server.url);
+          if (result.ok && result.tools) {
+            const agentTools = result.tools.map((t) =>
+              mcpToolToAgentTool(t, server.url),
+            );
+            // updateServerMcpTools will call applyConfig to register tools with the agent
+            mcpToolsRef.current.set(server.id, agentTools);
+            const flat = Array.from(mcpToolsRef.current.values()).flat();
+            setState((prev) => ({ ...prev, mcpTools: flat }));
+            if (configRef.current) applyConfig(configRef.current);
+            console.log(
+              `[Chat] Auto-connected MCP server ${server.url} (${result.toolCount} tools)`,
+            );
+          } else {
+            // Server is unreachable — mark as disabled so next load doesn't try again
+            updateMcpServer(server.id, { enabled: false });
+            console.warn(
+              `[Chat] Auto-connect failed for MCP server ${server.url}:`,
+              result.error,
+            );
+          }
+        } catch (err) {
+          console.error(`[Chat] Auto-connect error for ${server.url}:`, err);
+        }
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (sessionLoadedRef.current) return;
     sessionLoadedRef.current = true;
@@ -1063,6 +1155,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         removeUpload,
         installSkill,
         uninstallSkill,
+        setMcpTools,
+        updateServerMcpTools,
+        removeServerMcpTools,
       }}
     >
       {children}
