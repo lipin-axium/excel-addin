@@ -2,13 +2,13 @@
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
   <Id>d36b6541-f3fc-4c5c-9136-123ee8d0c70f</Id>
   <Version>1.0.0.0</Version>
-  <ProviderName>hewliyang</ProviderName>
+  <ProviderName>ExcelOS</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="OpenExcel"/>
+  <DisplayName DefaultValue="ExcelOS"/>
   <Description DefaultValue="AI Chat for Excel - Chat with LLMs directly in Excel using your own API keys."/>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://github.com/hewliyang/open-excel"/>
+  <SupportUrl DefaultValue="https://localhost:3000"/>
   <AppDomains>
     <AppDomain>https://localhost:3000</AppDomain>
   </AppDomains>
@@ -72,13 +72,13 @@
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Welcome to OpenExcel!"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="OpenExcel"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Open AI Chat"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Welcome to ExcelOS!"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="ExcelOS"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Open ExcelOS"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="GetStarted.Description" DefaultValue="Chat with AI models directly in Excel. Configure your API keys in Settings to get started."/>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open the AI chat panel"/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open ExcelOS AI chat panel"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
