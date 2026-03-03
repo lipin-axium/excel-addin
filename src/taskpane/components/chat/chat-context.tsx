@@ -21,7 +21,7 @@ import {
   useState,
 } from "react";
 import type { DirtyRange } from "../../../lib/dirty-tracker";
-import { getWorkbookMetadata, navigateTo } from "../../../lib/excel/api";
+import { getWorkbookMetadata, getSelectedRangeData, navigateTo } from "../../../lib/excel/api";
 import {
   agentMessagesToChatMessages,
   type ChatMessage,
@@ -125,7 +125,7 @@ const INITIAL_STATS: SessionStats = { ...deriveStats([]), contextWindow: 0 };
 
 interface ChatContextValue {
   state: ChatState;
-  sendMessage: (content: string, attachments?: string[]) => Promise<void>;
+  sendMessage: (content: string, attachments?: string[], includeSelection?: boolean) => Promise<void>;
   setProviderConfig: (config: ProviderConfig) => void;
   clearMessages: () => void;
   abort: () => void;
@@ -644,7 +644,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const sendMessage = useCallback(
-    async (content: string, attachments?: string[]) => {
+    async (content: string, attachments?: string[], includeSelection?: boolean) => {
       if (pendingConfigRef.current) {
         applyConfig(pendingConfigRef.current);
       }
@@ -689,6 +689,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           }
         } catch (err) {
           console.error("[Chat] Failed to get workbook metadata:", err);
+        }
+
+        // Add selection context if toggle is on
+        if (includeSelection) {
+          try {
+            const sel = await getSelectedRangeData();
+            if (sel) {
+              const selBlock = [
+                `<selection_context address="${sel.address}">`,
+                `This is the user's active selection. Use this range as the data source AND as the target location for any new content (charts, tables, formatting, etc.) unless instructed otherwise.`,
+                JSON.stringify({ values: sel.values, formulas: sel.formulas }, null, 2),
+                `</selection_context>`,
+              ].join("\n");
+              promptContent = `${selBlock}\n\n${promptContent}`;
+            }
+          } catch (err) {
+            console.error("[Chat] Failed to get selection data:", err);
+          }
         }
 
         // Add attachments section if files are uploaded

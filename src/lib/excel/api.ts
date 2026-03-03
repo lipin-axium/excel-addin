@@ -1117,7 +1117,6 @@ export interface WorkbookMetadata {
   totalSheets: number;
   activeSheetId: number;
   activeSheetName: string;
-  selectedRange: string;
 }
 
 export async function getWorkbookMetadata(): Promise<WorkbookMetadata> {
@@ -1129,9 +1128,6 @@ export async function getWorkbookMetadata(): Promise<WorkbookMetadata> {
 
     const activeSheet = sheets.getActiveWorksheet();
     activeSheet.load("id,name");
-
-    const selectedRange = workbook.getSelectedRange();
-    selectedRange.load("address");
 
     await context.sync();
 
@@ -1170,21 +1166,12 @@ export async function getWorkbookMetadata(): Promise<WorkbookMetadata> {
       stableIdMap.get(activeSheet.id) ||
       (await getStableSheetId(activeSheet.id));
 
-    const rangeAddress = selectedRange.address.includes("!")
-      ? selectedRange.address.split("!")[1]
-      : selectedRange.address;
-
     console.log("[getWorkbookMetadata] activeSheet.id:", activeSheet.id);
     console.log("[getWorkbookMetadata] activeSheet.name:", activeSheet.name);
     console.log(
       "[getWorkbookMetadata] activeSheet.stableId:",
       activeSheetStableId,
     );
-    console.log(
-      "[getWorkbookMetadata] selectedRange.address:",
-      selectedRange.address,
-    );
-    console.log("[getWorkbookMetadata] parsed rangeAddress:", rangeAddress);
 
     return {
       success: true,
@@ -1193,9 +1180,42 @@ export async function getWorkbookMetadata(): Promise<WorkbookMetadata> {
       totalSheets: sheets.items.length,
       activeSheetId: activeSheetStableId,
       activeSheetName: activeSheet.name,
-      selectedRange: rangeAddress,
     };
   });
+}
+
+export async function getSelectionAddress(): Promise<string | null> {
+  try {
+    return await Excel.run(async (context) => {
+      const range = context.workbook.getSelectedRange();
+      range.load("address");
+      await context.sync();
+      return range.address;
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function getSelectedRangeData(): Promise<{
+  address: string;
+  values: unknown[][];
+  formulas: string[][];
+} | null> {
+  try {
+    return await Excel.run(async (context) => {
+      const range = context.workbook.getSelectedRange();
+      range.load("address,values,formulas");
+      await context.sync();
+      return {
+        address: range.address,
+        values: range.values as unknown[][],
+        formulas: range.formulas as string[][],
+      };
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function clearRowColumnAxis(

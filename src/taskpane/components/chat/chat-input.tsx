@@ -1,4 +1,4 @@
-import { Paperclip, Send, Square, X } from "lucide-react";
+import { Paperclip, Send, Square, Table2, X } from "lucide-react";
 import {
   type ChangeEvent,
   type KeyboardEvent,
@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { getSelectionAddress } from "../../../lib/excel/api";
 import { useChat } from "./chat-context";
 
 function formatFileSize(bytes: number): string {
@@ -22,6 +23,22 @@ const MAX_ROWS = 2;
 export function ChatInput() {
   const { sendMessage, state, abort, processFiles, removeUpload } = useChat();
   const [input, setInput] = useState("");
+  const [includeSelection, setIncludeSelection] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const poll = async () => {
+      const addr = await getSelectionAddress();
+      if (!cancelled) setSelectedAddress(addr);
+    };
+    poll();
+    const id = setInterval(poll, 500);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploads = state.uploads;
@@ -60,6 +77,7 @@ export function ChatInput() {
     await sendMessage(
       trimmed,
       attachmentNames.length > 0 ? attachmentNames : undefined,
+      includeSelection,
     );
   }, [input, state.isStreaming, sendMessage, uploads]);
 
@@ -140,6 +158,18 @@ export function ChatInput() {
         accept="image/*,.txt,.csv,.json,.xml,.md,.html,.css,.js,.ts,.py,.sh"
       />
 
+      {/* Selection indicator */}
+      {selectedAddress && (
+        <div className="flex items-center gap-1 mb-1 px-0.5">
+          <span className="text-[10px] text-(--chat-text-muted)">selecting</span>
+          <span
+            className={`text-[10px] font-mono ${includeSelection ? "text-(--chat-accent)" : "text-(--chat-text-muted)"}`}
+          >
+            {selectedAddress}
+          </span>
+        </div>
+      )}
+
       {/* Input container — border on wrapper, textarea + action row inside */}
       <div
         className="bg-(--chat-input-bg) border border-(--chat-border) focus-within:border-(--chat-border-active) transition-colors"
@@ -171,21 +201,38 @@ export function ChatInput() {
 
         {/* Action row inside the border */}
         <div className="flex items-center justify-between px-1.5 py-1">
-          <button
-            type="button"
-            onClick={openFilePicker}
-            disabled={isUploading || state.isStreaming}
-            className="flex items-center justify-center w-6 h-5
-                       text-(--chat-text-muted) hover:text-(--chat-text-primary)
-                       disabled:opacity-30 disabled:cursor-not-allowed
-                       transition-colors"
-            title="Upload files"
-          >
-            <Paperclip
-              size={13}
-              className={isUploading ? "animate-pulse" : ""}
-            />
-          </button>
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={openFilePicker}
+              disabled={isUploading || state.isStreaming}
+              className="flex items-center justify-center w-6 h-5
+                         text-(--chat-text-muted) hover:text-(--chat-text-primary)
+                         disabled:opacity-30 disabled:cursor-not-allowed
+                         transition-colors"
+              title="Upload files"
+            >
+              <Paperclip
+                size={13}
+                className={isUploading ? "animate-pulse" : ""}
+              />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIncludeSelection((v) => !v)}
+              disabled={state.isStreaming}
+              className={`flex items-center justify-center w-6 h-5
+                         disabled:opacity-30 disabled:cursor-not-allowed
+                         transition-colors ${
+                           includeSelection
+                             ? "text-(--chat-accent)"
+                             : "text-(--chat-text-muted) hover:text-(--chat-text-primary)"
+                         }`}
+              title={includeSelection ? "Selection context: ON" : "Selection context: OFF"}
+            >
+              <Table2 size={13} />
+            </button>
+          </div>
 
           {state.isStreaming ? (
             <button
