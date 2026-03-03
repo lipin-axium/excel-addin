@@ -83,8 +83,15 @@ function SkillsSection() {
 
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted) mb-4">
-        agent skills
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted)">
+          agent skills
+        </div>
+        {state.skills.length > 0 && (
+          <div className="text-[10px] text-(--chat-accent) font-mono">
+            {state.skills.length} active
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
