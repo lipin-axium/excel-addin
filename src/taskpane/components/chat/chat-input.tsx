@@ -79,7 +79,7 @@ export function ChatInput() {
       attachmentNames.length > 0 ? attachmentNames : undefined,
       includeSelection,
     );
-  }, [input, state.isStreaming, sendMessage, uploads]);
+  }, [input, state.isStreaming, sendMessage, uploads, includeSelection]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -161,7 +161,9 @@ export function ChatInput() {
       {/* Selection indicator */}
       {selectedAddress && (
         <div className="flex items-center gap-1 mb-1 px-0.5">
-          <span className="text-[10px] text-(--chat-text-muted)">selecting</span>
+          <span className="text-[10px] text-(--chat-text-muted)">
+            selecting
+          </span>
           <span
             className={`text-[10px] font-mono ${includeSelection ? "text-(--chat-accent)" : "text-(--chat-text-muted)"}`}
           >
@@ -228,7 +230,11 @@ export function ChatInput() {
                              ? "text-(--chat-accent)"
                              : "text-(--chat-text-muted) hover:text-(--chat-text-primary)"
                          }`}
-              title={includeSelection ? "Selection context: ON" : "Selection context: OFF"}
+              title={
+                includeSelection
+                  ? "Selection context: ON"
+                  : "Selection context: OFF"
+              }
             >
               <Table2 size={13} />
             </button>

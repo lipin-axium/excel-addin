@@ -13,10 +13,17 @@ export function loadMcpServers(): McpServerConfig[] {
     // Migrate legacy single-server config
     const legacy = localStorage.getItem(LEGACY_KEY);
     if (legacy) {
-      const parsed = JSON.parse(legacy) as { serverUrl?: string; enabled?: boolean };
+      const parsed = JSON.parse(legacy) as {
+        serverUrl?: string;
+        enabled?: boolean;
+      };
       if (parsed.serverUrl) {
         const migrated: McpServerConfig[] = [
-          { id: crypto.randomUUID(), url: parsed.serverUrl, enabled: parsed.enabled ?? false },
+          {
+            id: crypto.randomUUID(),
+            url: parsed.serverUrl,
+            enabled: parsed.enabled ?? false,
+          },
         ];
         localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
         localStorage.removeItem(LEGACY_KEY);
@@ -38,7 +45,11 @@ export function saveMcpServers(servers: McpServerConfig[]) {
 }
 
 export function addMcpServer(url: string): McpServerConfig {
-  const server: McpServerConfig = { id: crypto.randomUUID(), url, enabled: false };
+  const server: McpServerConfig = {
+    id: crypto.randomUUID(),
+    url,
+    enabled: false,
+  };
   const servers = loadMcpServers();
   servers.push(server);
   saveMcpServers(servers);

@@ -46,7 +46,9 @@ async function jsonRpc(
   });
 
   if (!response.ok) {
-    throw new Error(`MCP server returned ${response.status} ${response.statusText}`);
+    throw new Error(
+      `MCP server returned ${response.status} ${response.statusText}`,
+    );
   }
 
   const json = (await response.json()) as {
@@ -115,7 +117,10 @@ export function mcpToolToAgentTool(
           "content" in raw &&
           Array.isArray((raw as any).content)
         ) {
-          const parts = (raw as any).content as { type: string; text?: string }[];
+          const parts = (raw as any).content as {
+            type: string;
+            text?: string;
+          }[];
           text = parts
             .filter((p) => p.type === "text" && typeof p.text === "string")
             .map((p) => p.text as string)

@@ -10,7 +10,19 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import {
+  type McpToolDef,
+  mcpToolToAgentTool,
+  pingMcpServer,
+} from "../../../lib/mcp/mcp-client";
+import {
+  loadMcpServers,
+  type McpServerConfig,
+  removeMcpServer,
+  saveMcpServers,
+  updateMcpServer,
+} from "../../../lib/mcp/mcp-config";
 import {
   buildAuthorizationUrl,
   exchangeOAuthCode,
@@ -32,18 +44,6 @@ import { loadWebConfig, saveWebConfig } from "../../../lib/web/config";
 import { listFetchProviders } from "../../../lib/web/fetch";
 import { listSearchProviders } from "../../../lib/web/search";
 import { useChat } from "./chat-context";
-import {
-  loadMcpServers,
-  saveMcpServers,
-  removeMcpServer,
-  updateMcpServer,
-  type McpServerConfig,
-} from "../../../lib/mcp/mcp-config";
-import {
-  pingMcpServer,
-  mcpToolToAgentTool,
-  type McpToolDef,
-} from "../../../lib/mcp/mcp-client";
 
 function SkillsSection() {
   const { state, installSkill, uninstallSkill } = useChat();
@@ -177,8 +177,14 @@ function SkillsSection() {
 }
 
 export function SettingsPanel() {
-  const { state, setProviderConfig, availableProviders, getModelsForProvider, setMcpTools, updateServerMcpTools, removeServerMcpTools } =
-    useChat();
+  const {
+    state,
+    setProviderConfig,
+    availableProviders,
+    getModelsForProvider,
+    updateServerMcpTools,
+    removeServerMcpTools,
+  } = useChat();
 
   const [saved] = useState(loadSavedConfig);
   const [provider, setProvider] = useState(() => saved?.provider || "");
@@ -223,7 +229,8 @@ export function SettingsPanel() {
     | { step: "connected"; toolCount: number; tools: McpToolDef[] }
     | { step: "error"; message: string };
 
-  const [mcpServers, setMcpServers] = useState<McpServerConfig[]>(loadMcpServers);
+  const [mcpServers, setMcpServers] =
+    useState<McpServerConfig[]>(loadMcpServers);
   const [mcpStatuses, setMcpStatuses] = useState<Record<string, McpStatus>>(
     () =>
       Object.fromEntries(
@@ -251,10 +258,17 @@ export function SettingsPanel() {
       const agentTools = result.tools.map((t) => mcpToolToAgentTool(t, url));
       updateServerMcpTools(server.id, agentTools);
       updateMcpServer(server.id, { enabled: true });
-      setServerStatus(server.id, { step: "connected", toolCount: result.toolCount ?? 0, tools: result.tools });
+      setServerStatus(server.id, {
+        step: "connected",
+        toolCount: result.toolCount ?? 0,
+        tools: result.tools,
+      });
     } else {
       removeServerMcpTools(server.id);
-      setServerStatus(server.id, { step: "error", message: result.error ?? "Could not connect" });
+      setServerStatus(server.id, {
+        step: "error",
+        message: result.error ?? "Could not connect",
+      });
     }
   };
 
@@ -1124,7 +1138,9 @@ export function SettingsPanel() {
           {mcpServers.length > 0 && (
             <div className="space-y-2">
               {mcpServers.map((server) => {
-                const status: McpStatus = mcpStatuses[server.id] ?? { step: "idle" };
+                const status: McpStatus = mcpStatuses[server.id] ?? {
+                  step: "idle",
+                };
                 return (
                   <div
                     key={server.id}
@@ -1133,7 +1149,10 @@ export function SettingsPanel() {
                   >
                     {/* URL + action buttons row */}
                     <div className="flex gap-1">
-                      <span className="flex-1 text-xs text-(--chat-text-primary) truncate py-1.5 px-1" title={server.url}>
+                      <span
+                        className="flex-1 text-xs text-(--chat-text-primary) truncate py-1.5 px-1"
+                        title={server.url}
+                      >
                         {server.url}
                       </span>
                       {status.step === "connected" ? (
@@ -1157,7 +1176,9 @@ export function SettingsPanel() {
                                      disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
                           style={{ borderRadius: "var(--chat-radius)" }}
                         >
-                          {status.step === "connecting" ? "Connecting…" : "Connect"}
+                          {status.step === "connecting"
+                            ? "Connecting…"
+                            : "Connect"}
                         </button>
                       )}
                       <button
@@ -1174,12 +1195,16 @@ export function SettingsPanel() {
                       <div className="text-[10px] space-y-0.5">
                         <div className="flex items-center gap-1.5 text-(--chat-text-secondary)">
                           <Check size={10} className="text-(--chat-success)" />
-                          {status.toolCount} tool{status.toolCount !== 1 ? "s" : ""} loaded
+                          {status.toolCount} tool
+                          {status.toolCount !== 1 ? "s" : ""} loaded
                         </div>
                         {status.tools.length > 0 && (
                           <ul className="pl-4 space-y-0.5">
                             {status.tools.map((t) => (
-                              <li key={t.name} className="text-(--chat-text-muted) truncate">
+                              <li
+                                key={t.name}
+                                className="text-(--chat-text-muted) truncate"
+                              >
                                 • {t.name}
                               </li>
                             ))}
@@ -1238,7 +1263,8 @@ export function SettingsPanel() {
           </div>
 
           <p className="text-[10px] text-(--chat-text-muted)">
-            Add URL then click Connect. Servers must allow CORS or use the CORS proxy above.
+            Add URL then click Connect. Servers must allow CORS or use the CORS
+            proxy above.
           </p>
         </div>
       </div>
@@ -1276,8 +1302,8 @@ export function SettingsPanel() {
           about
         </div>
         <p className="text-xs text-(--chat-text-secondary) leading-relaxed">
-          ExcelOS uses your own API key to connect to LLM providers. Your key
-          is stored locally in the browser.
+          ExcelOS uses your own API key to connect to LLM providers. Your key is
+          stored locally in the browser.
         </p>
         {isCustom && (
           <p className="text-xs text-(--chat-text-muted) leading-relaxed mt-2">
