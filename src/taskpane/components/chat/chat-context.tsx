@@ -55,8 +55,8 @@ import {
   buildSkillsPromptSection,
   getInstalledSkills,
   removeSkill,
-  seedDefaultSkills,
   type SkillMeta,
+  seedDefaultSkills,
   syncSkillsToVfs,
 } from "../../../lib/skills";
 import {

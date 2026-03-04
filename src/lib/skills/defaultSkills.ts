@@ -12,7 +12,9 @@ export const DEFAULT_SKILLS: DefaultSkill[] = [
   {
     name: "financial-models",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: financial-models
 description: Price European/American options using Black-Scholes, calculate Delta/Gamma/Theta/Vega/Rho Greeks, model derivatives with binomial trees, or verify put-call parity — with step-by-step Excel implementations
 platform: excel
@@ -243,8 +245,11 @@ For batch IV across a chain: use Solver with multiple target cells, or an iterat
 - \`examples/black-scholes.md\` — Complete worked example: pricing a call and put with full cell map
 - \`examples/greeks.md\` — Greeks dashboard with sensitivity analysis table
 - \`examples/binomial-tree.md\` — Multi-step binomial tree (10 steps) with backward induction
-` },
-      { path: "examples/binomial-tree.md", data: `# Example: Binomial Tree (10-Step American Put)
+`,
+      },
+      {
+        path: "examples/binomial-tree.md",
+        data: `# Example: Binomial Tree (10-Step American Put)
 
 ## Scenario
 American put option (early exercise possible):
@@ -326,8 +331,11 @@ Early exercise is most likely for deep in-the-money nodes near expiry, especiall
 
 ## Extending to Calls
 For an American call on a non-dividend-paying stock, early exercise is **never optimal** — the binomial price will equal the Black-Scholes European call price. This is a useful sanity check.
-` },
-      { path: "examples/black-scholes.md", data: `# Example: Black-Scholes Call & Put Pricing
+`,
+      },
+      {
+        path: "examples/black-scholes.md",
+        data: `# Example: Black-Scholes Call & Put Pricing
 
 ## Scenario
 Price a European call and put on AAPL:
@@ -379,8 +387,11 @@ Create a data table in column D:
 | 200 | |
 
 Select D1:E11, go to **Data → What-If Analysis → Data Table**, set Column input cell to A2. Excel auto-populates all call prices.
-` },
-      { path: "examples/greeks.md", data: `# Example: Greeks Dashboard
+`,
+      },
+      {
+        path: "examples/greeks.md",
+        data: `# Example: Greeks Dashboard
 
 ## Scenario
 Greeks for a near-the-money call option:
@@ -428,13 +439,16 @@ Data table varying S from 80 to 120 in steps of 5:
 | 120 | ≈ 31.57 | 0.832 | 0.0109 |
 
 Create using Data → Data Table with B2 as column input cell.
-` },
+`,
+      },
     ],
   },
   {
     name: "fixed-income",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: fixed-income
 description: Price bonds, calculate yield-to-maturity with RATE/YIELD functions, compute Macaulay/modified duration and convexity, bootstrap spot rate curves, or analyze fixed income securities in Excel
 platform: excel
@@ -695,8 +709,11 @@ For a tenor not in your curve (e.g. 2.5 years given 2Y and 3Y spots):
 
 - \`examples/bond-pricing.md\` — Complete bond pricing with cash flow table and sensitivity analysis
 - \`examples/duration-convexity.md\` — Duration/convexity ladder for a 3-bond portfolio with DV01 hedging
-` },
-      { path: "examples/bond-pricing.md", data: `# Example: Bond Pricing with Cash Flow Table
+`,
+      },
+      {
+        path: "examples/bond-pricing.md",
+        data: `# Example: Bond Pricing with Cash Flow Table
 
 ## Scenario
 Price a 10-year US Treasury note:
@@ -778,8 +795,11 @@ Select F:G data range, Data → What-If Analysis → Data Table, Column input ce
 
 Note the **asymmetry**: price rise from 4%→2% (+$177.60) > price fall from 4%→6% (−$150.95).
 This asymmetry is convexity at work.
-` },
-      { path: "examples/duration-convexity.md", data: `# Example: Duration, Convexity & DV01 for a Bond Portfolio
+`,
+      },
+      {
+        path: "examples/duration-convexity.md",
+        data: `# Example: Duration, Convexity & DV01 for a Bond Portfolio
 
 ## Portfolio
 Three bonds with different maturities — typical ladder structure:
@@ -875,13 +895,16 @@ Excel for approximation:
 \`\`\`
 
 Higher convexity = less actual loss than duration predicts (convexity cushion).
-` },
+`,
+      },
     ],
   },
   {
     name: "monte-carlo-simulation",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: monte-carlo-simulation
 description: Run Monte Carlo simulations for stock price forecasting (GBM), option pricing, or portfolio risk (VaR/CVaR) using Excel NORM.S.INV/RAND formulas or bash scripts for large simulation runs
 platform: excel
@@ -1077,8 +1100,11 @@ Excel handles ~50,000 cells practically; use Python for larger.
 
 - \`examples/gbm-setup.md\` — Complete GBM Excel setup with 252-day path visualization
 - \`examples/var-cvar.md\` — VaR/CVaR calculation with 1000-path simulation and histogram
-` },
-      { path: "examples/gbm-setup.md", data: `# Example: GBM Stock Path in Excel
+`,
+      },
+      {
+        path: "examples/gbm-setup.md",
+        data: `# Example: GBM Stock Path in Excel
 
 ## Scenario
 Simulate MSFT price paths over 1 year:
@@ -1132,8 +1158,11 @@ Excel has no built-in seed for RAND(). Workaround:
 1. Run simulation, press F9 to generate a set of paths
 2. Copy the price range → Paste Special → Values only
 3. Now the values are frozen — annotate with date/seed info in a nearby cell
-` },
-      { path: "examples/var-cvar.md", data: `# Example: VaR and CVaR with Monte Carlo
+`,
+      },
+      {
+        path: "examples/var-cvar.md",
+        data: `# Example: VaR and CVaR with Monte Carlo
 
 ## Scenario
 Calculate 1-day VaR and CVaR for a $100,000 position in SPY:
@@ -1201,13 +1230,16 @@ VaR_10day = VaR_1day × √10 ≈ $1,845 × 3.162 ≈ $5,834
 Excel: \`=F4*SQRT(10)\`
 
 This approximation breaks down for longer horizons where path dependency matters.
-` },
+`,
+      },
     ],
   },
   {
     name: "portfolio-optimization",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: portfolio-optimization
 description: Optimize portfolio weights using Modern Portfolio Theory — build efficient frontier, maximize Sharpe ratio, run mean-variance optimization with Excel Solver, or compute correlation/covariance matrices
 platform: excel
@@ -1375,8 +1407,11 @@ Weighted MCTR (percentage contribution — sums to 1):
 
 - \`examples/efficient-frontier.md\` — Complete 3-asset efficient frontier with Solver walk-through
 - \`examples/solver-setup.md\` — Exact cell addresses and Solver dialog configuration for copy-paste setup
-` },
-      { path: "examples/efficient-frontier.md", data: `# Example: 3-Asset Efficient Frontier
+`,
+      },
+      {
+        path: "examples/efficient-frontier.md",
+        data: `# Example: 3-Asset Efficient Frontier
 
 ## Assets
 - **SPY** (US equity): μ = 10%, σ = 18%
@@ -1450,8 +1485,11 @@ Solver maximizing B11:
 3. Add a second data series for the tangency (max Sharpe) point
 4. Label axes: X = "Portfolio Risk (σ)", Y = "Expected Return"
 5. The tangency line from Rf through the max Sharpe point is the Capital Market Line (CML)
-` },
-      { path: "examples/solver-setup.md", data: `# Example: Step-by-Step Solver Configuration
+`,
+      },
+      {
+        path: "examples/solver-setup.md",
+        data: `# Example: Step-by-Step Solver Configuration
 
 ## Prerequisite: Enable Solver Add-In
 1. File → Options → Add-Ins
@@ -1535,13 +1573,16 @@ Same constraints as above.
 | Solver returns starting values | Non-convex local minimum; try random starting weights |
 | MMULT returns #VALUE! | Matrix dimensions wrong — covariance must be N×N matching N weight cells |
 | Sharpe is negative | Expected return < risk-free rate; check input values |
-` },
+`,
+      },
     ],
   },
   {
     name: "stock-analysis",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: stock-analysis
 description: Analyze stocks with DCF valuation, comparable company analysis (EV/EBITDA, P/E, P/S multiples), financial ratios (ROE, ROIC, debt/equity), or read income statements and balance sheets — with step-by-step Excel implementations
 platform: excel
@@ -1796,8 +1837,11 @@ Operating Cash Flow (OCF)       ← "Quality of earnings" — should track net i
 
 - \`examples/dcf-model.md\` — Complete 5-year DCF for a sample company with sensitivity table
 - \`examples/comps-table.md\` — Comparable company analysis with EV/EBITDA, P/E, P/S multiples and implied valuation
-` },
-      { path: "examples/comps-table.md", data: `# Example: Comparable Company Analysis (Comps)
+`,
+      },
+      {
+        path: "examples/comps-table.md",
+        data: `# Example: Comparable Company Analysis (Comps)
 
 ## Scenario
 Value a mid-cap cloud software company using public peers.
@@ -1871,8 +1915,11 @@ EV = Shares * Price + Debt - Cash
 | Large EV/Revenue spread | Revenue quality differs — check gross margins |
 | Net debt vs. peers | Higher leverage → higher risk → should trade at discount |
 | Recent M&A in peer group | Acquisition premiums inflate comps — adjust down |
-` },
-      { path: "examples/dcf-model.md", data: `# Example: 5-Year DCF Model
+`,
+      },
+      {
+        path: "examples/dcf-model.md",
+        data: `# Example: 5-Year DCF Model
 
 ## Scenario
 Value a mid-cap software company:
@@ -1967,13 +2014,16 @@ Select J2:O7 → Data → What-If Analysis → Data Table
 | 12% | $11.10 | $11.90 | $12.90 | $14.10 | $15.70 |
 
 Color code: green if > current market price, red if below. This shows the range of outcomes under different assumptions.
-` },
+`,
+      },
     ],
   },
   {
     name: "dcf-model",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: dcf-model
 description: Build institutional-quality DCF (Discounted Cash Flow) models for equity valuation in Excel. Covers WACC calculation, revenue projections, FCF build, terminal value, enterprise-to-equity bridge, and sensitivity tables. Use when valuing a company using intrinsic value methodology, building cash flow projections, or stress-testing valuation assumptions. Triggers on "DCF model", "discounted cash flow", "value this company", "intrinsic value", "WACC", or "build a DCF for [company]".
 platform: excel
@@ -2192,8 +2242,11 @@ Format cells with green-to-red conditional formatting. Bold the base case cell.
 4. **WACC uses book values** → always use market-value equity weight
 5. **Terminal value not discounted** → must divide by (1+WACC)^period
 6. **Unlevered FCF includes interest** → NOPAT already excludes interest (that's the point)
-` },
-      { path: "TROUBLESHOOTING.md", data: `# DCF Model Troubleshooting Guide
+`,
+      },
+      {
+        path: "TROUBLESHOOTING.md",
+        data: `# DCF Model Troubleshooting Guide
 
 **When to read this file:** If recalc.py shows errors OR valuation results seem unreasonable OR case selector not working properly.
 
@@ -2233,13 +2286,16 @@ Format cells with green-to-red conditional formatting. Bold the base case cell.
 - Check INDEX/OFFSET formulas reference correct row range and selector cell
 - Ensure absolute references ($B$6) are used for selector
 - Test by manually changing the selector cell and verifying projection values update
-` },
+`,
+      },
     ],
   },
   {
     name: "lbo-model",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: lbo-model
 description: Build LBO (Leveraged Buyout) models in Excel for private equity transactions. Covers sources & uses, operating model, debt schedule with cash sweep, and IRR/MOIC returns analysis. Use when evaluating a PE acquisition, modeling leveraged buyout returns, or preparing IC materials. Triggers on "LBO model", "leveraged buyout", "PE returns model", "IRR model", "sources and uses", or "model a buyout".
 platform: excel
@@ -2445,13 +2501,16 @@ Also build: **EBITDA Growth × Exit Multiple** and **Leverage × Exit Multiple**
 | Negative debt balance | Wrap with \`MAX(0, ...)\` |
 | IRR error | Verify signs: investment = negative, proceeds = positive |
 | Sources ≠ Uses | Equity is the plug — recalculate as \`=Uses - Debt\` |
-` },
+`,
+      },
     ],
   },
   {
     name: "comps-analysis",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: comps-analysis
 description: Build institutional-grade comparable company analyses with operating metrics, valuation multiples, and statistical benchmarking in Excel. Use for public company valuation, M&A pricing, benchmarking performance vs. peers, or IPO pricing. Triggers on "comps", "comparable companies", "trading comps", "peer analysis", "valuation multiples", "comp table", or "benchmark [company] against peers".
 platform: excel
@@ -2611,13 +2670,16 @@ Before delivering:
 🚩 Missing data without explanation
 
 **When in doubt, exclude the company.** 3 perfect comps beat 6 questionable ones.
-` },
+`,
+      },
     ],
   },
   {
     name: "3-statements",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: 3-statements
 description: Build or complete integrated 3-statement financial models (Income Statement, Balance Sheet, Cash Flow Statement) in Excel with proper linkages, scenario toggles, and audit checks. Use when building a full financial model, linking IS/BS/CF statements, or populating an existing template. Triggers on "3-statement model", "financial model", "link the statements", "income statement balance sheet cash flow", "build a model for [company]", or "populate this template".
 platform: excel
@@ -2847,8 +2909,11 @@ If the model requires iterative calculations (e.g., revolver draws): File → Op
 - [ ] Consistent formulas across all projection columns
 - [ ] No #REF!, #DIV/0!, #VALUE! errors
 - [ ] Scenario toggle switches all three statements correctly
-` },
-      { path: "references/formatting.md", data: `# Formatting Standards Reference
+`,
+      },
+      {
+        path: "references/formatting.md",
+        data: `# Formatting Standards Reference
 
 | Element | Format |
 |---------|--------|
@@ -2966,8 +3031,11 @@ The Balance Sheet check row (below Total Liabilities and Equity) uses conditiona
 - EBITDA Margin > 50% → WARNING: Unusually high
 - Net Margin < 0% → FLAG: Net losses (may be acceptable in growth phase)
 - Net Margin > Gross Margin → ERROR: Formula issue
-` },
-      { path: "references/formulas.md", data: `# Formula Reference
+`,
+      },
+      {
+        path: "references/formulas.md",
+        data: `# Formula Reference
 
 **IMPORTANT:** Use the formulas outlined in this reference document unless otherwise specified by the user.
 
@@ -3259,8 +3327,11 @@ NOL Non-Negative:       = Ending NOL Balance ≥ 0         (must be TRUE)
 NOL Starting Balance:   = Beginning NOL (Year 1) = 0     (must be TRUE for new business)
 NOL Accumulation:       = NOL increases only when EBT < 0 (losses generate NOL)
 \`\`\`
-` },
-      { path: "references/sec-filings.md", data: `# SEC Filings Data Extraction Reference
+`,
+      },
+      {
+        path: "references/sec-filings.md",
+        data: `# SEC Filings Data Extraction Reference
 
 **When to Use:** Only reference this file when a model template specifically requires pulling data from SEC filings (10-K, 10-Q). For templates that provide data directly or use other data sources, this reference is not needed.
 
@@ -3385,13 +3456,16 @@ Extract 3 years of historical data minimum:
 | Restatements | Use restated figures, note in assumptions |
 | Fiscal year ≠ calendar year | Label with fiscal year end (e.g., FYE Jan 2025) |
 | Non-USD reporting currency | Adapt model currency to match filing |
-` },
+`,
+      },
     ],
   },
   {
     name: "check-model",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: check-model
 description: Debug and audit Excel financial models for errors — broken formulas, hardcoded overrides, balance sheet imbalances, cash flow mismatches, circular references, and logic gaps. Use when a model isn't tying, producing unexpected results, or before sending to a client or IC. Triggers on "debug model", "check my model", "audit model", "model won't balance", "something's off", "QA model", or "model review".
 platform: excel
@@ -3542,13 +3616,16 @@ Generate an issue log:
 - **Models that "work" can still be wrong** — sanity-check outputs against industry benchmarks
 - **Don't change the model without asking** — report issues and let the user decide how to fix
 - If the model uses VBA macros, note any macro-driven calculations that can't be audited from formulas alone
-` },
+`,
+      },
     ],
   },
   {
     name: "merger-model",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: merger-model
 description: Build M&A merger models and accretion/dilution analysis in Excel. Models pro forma EPS impact, synergy sensitivities, purchase price allocation, and deal consideration mix. Use when evaluating an acquisition, preparing merger consequences analysis, or advising on deal terms. Triggers on "merger model", "accretion dilution", "M&A model", "pro forma EPS", "merger consequences", "deal impact analysis", or "is this deal accretive".
 platform: excel
@@ -3702,13 +3779,16 @@ Show as a single output cell, then sanity check: is this achievable given the de
 - **Don't forget foregone interest** on cash used — it's a real cost
 - Tax rate on all adjustments (synergies, interest) should match acquirer's marginal rate
 - Transaction fees reduce Day 1 equity value — include in uses
-` },
+`,
+      },
     ],
   },
   {
     name: "datapack-builder",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: datapack-builder
 description: Build professional financial data packs and standardized investment workbooks in Excel from CIMs, SEC filings, or financial data. Extract, normalize, and structure financial statements into IC-ready Excel workbooks with 8-tab standard structure. Use for M&A due diligence, PE analysis, or standardizing financial reporting. Triggers on "build a datapack", "data pack", "financial data pack", "standardize financials", "extract financials from CIM", or "IC materials".
 platform: excel
@@ -3942,13 +4022,16 @@ Document all adjustment rationale — IC will ask.
 - [ ] Negatives in parentheses
 - [ ] Normalization adjustments documented with rationale
 - [ ] File named: \`CompanyName_DataPack_YYYY-MM-DD.xlsx\`
-` },
+`,
+      },
     ],
   },
   {
     name: "deal-tracker",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: deal-tracker
 description: Track live M&A and investment banking deals with milestones, deadlines, action items, and status updates in Excel. Maintains a deal pipeline view and surfaces upcoming deadlines and overdue items. Use when managing a deal book, tracking process milestones, or preparing for weekly deal reviews. Triggers on "deal tracker", "track my deals", "deal status", "process update", "deal pipeline", or "weekly deal review".
 platform: excel
@@ -4088,13 +4171,16 @@ Action items: [owner and due date for each open item]
 - **Every action item needs an owner and due date** — otherwise it won't get done
 - **Archive closed/dead deals** to a separate tab — keep the active pipeline view clean
 - **Track buyer/investor feedback** in notes — patterns inform process adjustments
-` },
+`,
+      },
     ],
   },
   {
     name: "buyer-list",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: buyer-list
 description: Build and organize a universe of potential acquirers for sell-side M&A processes in Excel. Identifies strategic and financial buyers, assesses fit, and prioritizes outreach by tier. Use when preparing for a sell-side mandate, building a buyer universe, or evaluating potential partners. Triggers on "buyer list", "buyer universe", "potential acquirers", "who would buy this", "strategic buyers", "financial sponsors", or "build a buyer list for [company]".
 platform: excel
@@ -4228,13 +4314,16 @@ Generate a narrative summary for the engagement letter or client pitch:
 - **Always ask the seller** about buyers to include or exclude before distributing teasers
 - **Update as the process progresses** — move buyers between tiers based on feedback and conversations
 - **Financial sponsors**: check fund vintage — a fund in year 5–6 may be more motivated than a recently raised fund
-` },
+`,
+      },
     ],
   },
   {
     name: "earnings-preview",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: earnings-preview
 description: Build pre-earnings analysis with estimate models, bull/bear/base scenarios, and key metrics to watch before a company reports. Use to prepare positioning notes, set up scenarios, and identify what will move the stock on earnings day. Triggers on "earnings preview", "what to watch for [company] earnings", "pre-earnings", "earnings setup", "preview Q[X] for [company]", or "[company] reports this week".
 platform: excel
@@ -4339,13 +4428,16 @@ Options-implied move: ±X%
 - **Historical earnings reactions** calibrate expectations — look for the pattern (does this stock sell the news?)
 - **Options-implied move** tells you what the market expects — compare to your scenario spread
 - **Forward guidance matters most** — a beat with weak guidance typically sells off; miss with raised guidance often rallies
-` },
+`,
+      },
     ],
   },
   {
     name: "idea-generation",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: idea-generation
 description: Systematic stock screening and investment idea sourcing. Combines quantitative screens, thematic research, and pattern recognition to surface long and short ideas. Use when looking for new investment ideas, running stock screens, or conducting thematic sweeps. Triggers on "idea generation", "stock screen", "find me ideas", "what looks interesting", "screen for stocks", "new long ideas", or "pitch me something".
 platform: excel
@@ -4472,13 +4564,16 @@ Deliver an Excel workbook with:
 - **Contrarian ideas need a catalyst** — being early without a catalyst is the same as being wrong
 - **Short ideas need higher conviction** — timing is harder and risk is asymmetric (can always go higher)
 - **Track idea hit rates over time** — refine which screens and approaches work best
-` },
+`,
+      },
     ],
   },
   {
     name: "model-update",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: model-update
 description: Update financial models with new quarterly earnings actuals, guidance changes, or revised assumptions. Adjusts forward estimates, recalculates valuation, and flags material changes. Use after earnings, guidance updates, or when assumptions need refreshing. Triggers on "update model", "plug earnings", "refresh estimates", "update numbers for [company]", "new guidance", or "revise estimates after [company] reported".
 platform: excel
@@ -4605,13 +4700,16 @@ Recalculate valuation with updated estimates:
 - **Share count matters** — dilution from stock comp or converts can materially affect EPS even if NI is unchanged
 - **Forward guidance is the key input** — management's view of next quarter is more actionable than the current quarter beat/miss
 - **Track your revision history** — it shows analytical progression and helps calibrate forecasting accuracy
-` },
+`,
+      },
     ],
   },
   {
     name: "thesis-tracker",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: thesis-tracker
 description: Maintain and update investment theses for portfolio positions and watchlist names. Track key pillars, data points, catalysts, and conviction over time. Use when updating a thesis with new information, reviewing position rationale, or checking if a thesis is still intact. Triggers on "update thesis for [company]", "is my thesis still intact", "thesis check", "add data point to [company]", "thesis tracker", or "review my position in [company]".
 platform: excel
@@ -4743,13 +4841,16 @@ Sort by: Conviction descending, then Upside descending.
 - **Review all theses quarterly** — even when nothing dramatic has happened
 - **A broken pillar ≠ automatic sell** — but it requires explicit re-underwriting to stay long
 - **Position sizing should reflect conviction** — if conviction drops, trim before thesis breaks fully
-` },
+`,
+      },
     ],
   },
   {
     name: "catalyst-calendar",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: catalyst-calendar
 description: Build and maintain a catalyst calendar in Excel tracking upcoming earnings dates, conferences, product launches, regulatory decisions, and macro events across a coverage universe. Use to prioritize positioning ahead of events. Triggers on "catalyst calendar", "upcoming events", "earnings calendar", "event calendar", or "catalyst tracker".
 platform: excel
@@ -4836,13 +4937,16 @@ Each week, generate a forward-looking summary:
 - Some catalysts are recurring (monthly industry data) — build a template and auto-populate
 - Color-code by impact level: Red = high impact, Yellow = moderate, Green = routine
 - Archive past catalysts with the actual outcome — builds pattern recognition over time
-` },
+`,
+      },
     ],
   },
   {
     name: "morning-note",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: morning-note
 description: Draft concise morning meeting notes in Excel summarizing overnight developments, trade ideas, and key events for coverage stocks. Designed for the 7am morning meeting format — tight, opinionated, actionable. Triggers on "morning note", "morning meeting", "what happened overnight", "trade idea", "morning call prep", or "daily note".
 platform: excel
@@ -4934,13 +5038,16 @@ If a coverage company reported, provide a quick reaction:
 - Distinguish between actionable events (earnings, M&A) and noise (minor analyst notes, non-events)
 - Time-stamp your takes — if you're writing at 6am, note that pre-market may change by open
 - If you're wrong, own it in the next morning note — credibility matters more than being right every time
-` },
+`,
+      },
     ],
   },
   {
     name: "dd-checklist",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: dd-checklist
 description: Generate and track comprehensive due diligence checklists tailored to a target company's sector, deal type, and complexity in Excel. Covers all major workstreams with request lists, status tracking, and red flag escalation. Use when kicking off diligence, organizing a data room review, or tracking outstanding items. Triggers on "dd checklist", "due diligence tracker", "diligence request list", "data room review", "what do we still need", or "kick off diligence for [company]".
 platform: excel
@@ -5108,13 +5215,16 @@ Automatically add when applicable:
 - **Cross-reference the data room** against the checklist to identify gaps systematically
 - **Update continuously** — the checklist is a living document, not a one-time exercise
 - **Red flags are negotiating points** — document them carefully for purchase price adjustment conversations
-` },
+`,
+      },
     ],
   },
   {
     name: "returns-analysis",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: returns-analysis
 description: Build IRR and MOIC sensitivity tables for private equity deal evaluation in Excel. Models returns across entry multiple, leverage, exit multiple, growth rate, and hold period scenarios. Use when sizing up a PE deal, stress-testing returns, or preparing IC returns exhibits. Triggers on "returns analysis", "IRR sensitivity", "MOIC table", "PE returns", "what's the IRR at", "model the returns", or "back of the envelope LBO returns".
 platform: excel
@@ -5280,13 +5390,16 @@ Column headers: Exit multiple
 - **Transaction costs** (2–4% of EV) reduce Day 1 equity — don't overlook
 - **Asset vs. stock deal** tax treatment can affect after-tax returns — note the structure
 - **Debt paydown** contribution is often underestimated in early hold years — model the schedule properly
-` },
+`,
+      },
     ],
   },
   {
     name: "unit-economics",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: unit-economics
 description: Analyze unit economics for PE targets and SaaS/subscription businesses — ARR bridges, cohort matrices, LTV/CAC, net dollar retention, and payback periods in Excel. Use when evaluating revenue quality, building cohort analysis, or assessing customer economics. Triggers on "unit economics", "cohort analysis", "ARR analysis", "LTV CAC", "net retention", "revenue quality", "customer economics", or "analyze ARR for [company]".
 platform: excel
@@ -5452,13 +5565,16 @@ Overall Score = AVERAGE(Score_column)
 - **Differentiate contracted ARR from recognized revenue** — billings vs. revenue timing differences matter
 - **Usage-based models**: focus on consumption trends and net expansion rather than traditional ARR retention
 - **Professional services revenue** should be evaluated separately — it's not recurring and margins are typically lower
-` },
+`,
+      },
     ],
   },
   {
     name: "portfolio-monitoring",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: portfolio-monitoring
 description: Track and analyze portfolio company performance against budget and prior periods in Excel. Extracts KPIs, flags variances, and produces summary dashboards for board materials or GP reviews. Use when reviewing portfolio company financials, preparing board materials, or monitoring covenant compliance. Triggers on "portfolio monitoring", "review portfolio company", "monthly financials", "how is [company] performing", "variance analysis", "covenant check", or "portfolio update".
 platform: excel
@@ -5626,13 +5742,16 @@ Generate a list of questions based on red/yellow flags:
 - **Output should be board-ready** — concise, factual, no jargon or filler
 - **Trend the key metrics** over 4–8 quarters to spot inflection points before they become problems
 - **Cash flow is the ultimate truth** — EBITDA can be managed, cash cannot
-` },
+`,
+      },
     ],
   },
   {
     name: "deal-screening",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: deal-screening
 description: Quickly screen inbound deal flow — CIMs, teasers, and broker materials — against a fund's investment criteria. Extracts key deal metrics, runs a pass/fail framework, and outputs a one-page screening memo. Use when reviewing new deal opportunities, triaging inbound materials, or deciding whether to take a first call. Triggers on "screen this deal", "review this CIM", "should we look at this", "triage this teaser", "deal screening", or "is this a fit for us".
 platform: excel
@@ -5764,13 +5883,16 @@ RECOMMENDED NEXT STEP: [Take first call / Pass / Request more info]
 - **One hard-pass criterion should kill the deal** — don't rationalize around fundamental mismatches
 - **Save the fund's screening criteria** once confirmed — apply consistently to future deals
 - **Track pass/fail rate by criterion** over time — helps identify where deal flow is mismatched to strategy
-` },
+`,
+      },
     ],
   },
   {
     name: "dd-meeting-prep",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: dd-meeting-prep
 description: Prepare for due diligence meetings in Excel — management presentations, expert network calls, customer references, and advisor sessions. Generates targeted question lists, benchmarks, and red flags to probe. Use before any diligence meeting or call. Triggers on "prep for management meeting", "diligence call prep", "expert call questions", "customer reference questions", or "meeting prep for [company]".
 platform: excel
@@ -5876,13 +5998,16 @@ Excel meeting prep sheet:
 - Take notes on body language and confidence levels, not just answers
 - Always end with: "What haven't we asked about that we should?"
 - Keep the question list to 15-20 max — you won't get through more in a 60-90 min session
-` },
+`,
+      },
     ],
   },
   {
     name: "deal-sourcing",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: deal-sourcing
 description: Build a PE deal sourcing tracker in Excel — organize target companies by sector and deal parameters, track relationship status, and draft founder outreach email templates. Use when building a target list, tracking sourcing pipeline, or preparing outreach materials. Triggers on "find companies", "source deals", "draft founder email", "deal sourcing", "target list", or "outreach to founder".
 platform: excel
@@ -5946,13 +6071,16 @@ Draft personalized cold email templates for the user to customize and send:
 - Never send emails without explicit user approval
 - If the user's firm intro or investment criteria aren't clear, ask before drafting
 - Prioritize quality over quantity — 5 well-researched targets beat 20 generic ones
-` },
+`,
+      },
     ],
   },
   {
     name: "ic-memo",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: ic-memo
 description: Structure an investment committee memo for PE deal approval in Excel. Organizes due diligence findings, financial analysis, deal terms, and returns into an IC-ready workbook with supporting tables. Use when preparing for investment committee, writing up a deal, or creating a formal recommendation. Triggers on "write IC memo", "investment committee memo", "deal write-up", "prepare IC materials", or "recommendation memo".
 platform: excel
@@ -6043,13 +6171,16 @@ Standard IC memo format:
 - Use the firm's standard memo template if the user provides one
 - Financial tables should tie — check that EBITDA bridges, S&U balances, and returns math is consistent
 - Ask for missing inputs rather than making assumptions on deal terms or returns
-` },
+`,
+      },
     ],
   },
   {
     name: "value-creation-plan",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: value-creation-plan
 description: Build a post-acquisition value creation plan in Excel with EBITDA bridge, 100-day priorities, KPI dashboard, and accountability tracker. Use when planning post-close execution, preparing operating partner materials, or building a board-ready value creation roadmap. Triggers on "value creation plan", "100-day plan", "post-close plan", "EBITDA bridge", "operating plan", or "value creation levers".
 platform: excel
@@ -6173,13 +6304,16 @@ Excel workbook with:
 - Track initiative-level P&L impact, not just top-line EBITDA — you need to know what's working
 - Add-on M&A is often the largest value creation lever — start the pipeline on Day 1
 - Always pressure-test assumptions with operating partners or industry experts
-` },
+`,
+      },
     ],
   },
   {
     name: "portfolio-rebalance",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: portfolio-rebalance
 description: Analyze portfolio allocation drift and generate tax-aware rebalancing trade recommendations in Excel. Considers tax implications, transaction costs, and wash sale rules across account types. Use when checking if a portfolio is out of balance, generating rebalancing trades, or reviewing asset location. Triggers on "rebalance portfolio", "portfolio drift", "allocation check", "rebalancing trades", "my portfolio is out of balance", or "check allocation for [client]".
 platform: excel
@@ -6302,13 +6436,16 @@ Estimated Total Tax:        =SUMPRODUCT(Gains, TaxRates)
 - **Check for client-specific restrictions** (ESG preferences, concentrated stock, lockup periods)
 - **Wash sale rules apply across ALL accounts** — coordinate trades across the entire household
 - **Document the rationale** for every trade for compliance records
-` },
+`,
+      },
     ],
   },
   {
     name: "tax-loss-harvesting",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: tax-loss-harvesting
 description: Identify tax-loss harvesting opportunities across taxable accounts in Excel. Finds positions with unrealized losses, suggests replacement securities, and tracks wash sale windows. Use for year-end tax planning, reducing capital gains, or optimizing after-tax returns. Triggers on "tax-loss harvesting", "TLH", "harvest losses", "tax losses", "unrealized losses", or "year-end tax planning".
 platform: excel
@@ -6435,13 +6572,16 @@ After 30+ days:
 - **Year-end urgency** — December is prime season, but opportunities exist throughout the year
 - **Mutual fund distributions** in December can create unexpected gains — harvest before ex-dividend date
 - **Not all losses are worth harvesting** — transaction costs, tracking error, and timing risk have real costs; calculate the breakeven
-` },
+`,
+      },
     ],
   },
   {
     name: "financial-plan",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: financial-plan
 description: Build or update a comprehensive financial plan covering retirement projections, cash flow analysis, education funding, and estate planning in Excel. Use for new client onboarding, annual plan reviews, or scenario modeling. Triggers on "financial plan", "retirement plan", "can I retire", "retirement projections", "education funding", "estate plan", "cash flow analysis", or "plan update for [client]".
 platform: excel
@@ -6633,13 +6773,16 @@ Lifetime Exemption Remaining:          =Exemption - PriorGifting
 - **Always stress-test the plan** — a plan that only works in the base case isn't a good plan
 - **LTC planning** — the cost of a 3-year LTC event ($400–600K) can devastate a retirement plan; address it early
 - **Compliance:** ensure recommendations align with fiduciary standards and suitability requirements
-` },
+`,
+      },
     ],
   },
   {
     name: "client-review",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: client-review
 description: Prepare for client review meetings with portfolio performance summary, allocation analysis, talking points, and action items. Pulls together account data into a concise meeting-ready format in Excel. Use before quarterly reviews, annual checkups, or ad-hoc client meetings. Triggers on "client review", "meeting prep for [client]", "quarterly review", "prep for [client name]", or "client meeting".
 platform: excel
@@ -6732,13 +6875,16 @@ Based on the review, suggest:
 - Always end with clear action items and next steps with dates
 - Document the meeting notes and any changes to the IPS
 - Compliance: ensure all materials are compliant with firm policies and regulatory requirements
-` },
+`,
+      },
     ],
   },
   {
     name: "investment-proposal",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: investment-proposal
 description: Create professional investment proposals for prospective clients in Excel. Covers proposed allocation, projected outcomes, and fee structure with scenario modeling. Use when pitching new clients or presenting a new investment strategy. Triggers on "investment proposal", "prospect presentation", "pitch new client", "proposal for [client]", or "new client presentation".
 platform: excel
@@ -6829,13 +6975,16 @@ Proposed allocation:
 - The transition plan matters — clients fear the disruption of switching advisors
 - Follow up within 48 hours with the proposal and a clear next step
 - Compliance must review before presenting to prospects
-` },
+`,
+      },
     ],
   },
   {
     name: "client-report",
     files: [
-      { path: "SKILL.md", data: `---
+      {
+        path: "SKILL.md",
+        data: `---
 name: client-report
 description: Build professional client-facing performance reports in Excel with portfolio returns, allocation breakdowns, holdings detail, and market commentary. Suitable for quarterly or annual distribution. Triggers on "client report", "performance report", "quarterly report for [client]", "generate reports", or "client statement".
 platform: excel
@@ -6931,7 +7080,8 @@ Excel workbook with one tab per section:
 - Match the level of detail to the client — some want every holding, others want a one-page summary
 - Benchmark selection matters — use the benchmark from the IPS, not whatever looks best
 - Review for compliance approval before first distribution of a new template
-` },
+`,
+      },
     ],
   },
 ];

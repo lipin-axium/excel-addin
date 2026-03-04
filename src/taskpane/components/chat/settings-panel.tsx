@@ -40,10 +40,10 @@ import {
   THINKING_LEVELS,
   type ThinkingLevel,
 } from "../../../lib/provider-config";
+import { DEFAULT_SKILLS } from "../../../lib/skills/defaultSkills";
 import { loadWebConfig, saveWebConfig } from "../../../lib/web/config";
 import { listFetchProviders } from "../../../lib/web/fetch";
 import { listSearchProviders } from "../../../lib/web/search";
-import { DEFAULT_SKILLS } from "../../../lib/skills/defaultSkills";
 import { useChat } from "./chat-context";
 
 const DEFAULT_SKILL_NAMES = new Set(DEFAULT_SKILLS.map((s) => s.name));
