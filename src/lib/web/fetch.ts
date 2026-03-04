@@ -185,7 +185,7 @@ const exaFetchProvider: FetchProvider = {
     const apiKey = getApiKey(context, "exa");
     if (!apiKey) {
       throw new Error(
-        "Exa fetch requires an API key. Configure it in openexcel-web-config.apiKeys.exa.",
+        "Exa fetch requires an API key. Configure it in excelos-web-config.apiKeys.exa.",
       );
     }
 

@@ -8,7 +8,7 @@ export interface WebConfig {
   };
 }
 
-const STORAGE_KEY = "openexcel-web-config";
+const STORAGE_KEY = "excelos-web-config";
 
 const DEFAULT_WEB_CONFIG: WebConfig = {
   searchProvider: "ddgs",

@@ -1,7 +1,7 @@
 /* global Office */
 
-const SETTINGS_KEY_MAP = "openexcel-sheet-id-map";
-const SETTINGS_KEY_COUNTER = "openexcel-sheet-id-counter";
+const SETTINGS_KEY_MAP = "excelos-sheet-id-map";
+const SETTINGS_KEY_COUNTER = "excelos-sheet-id-counter";
 
 interface SheetIdMap {
   [guid: string]: number;

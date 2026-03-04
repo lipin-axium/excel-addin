@@ -100,7 +100,7 @@ const braveProvider: SearchProvider = {
     const apiKey = getApiKey(context, "brave");
     if (!apiKey) {
       throw new Error(
-        "Brave search requires an API key. Configure it in openexcel-web-config.apiKeys.brave.",
+        "Brave search requires an API key. Configure it in excelos-web-config.apiKeys.brave.",
       );
     }
 
@@ -145,7 +145,7 @@ const serperProvider: SearchProvider = {
     const apiKey = getApiKey(context, "serper");
     if (!apiKey) {
       throw new Error(
-        "Serper search requires an API key. Configure it in openexcel-web-config.apiKeys.serper.",
+        "Serper search requires an API key. Configure it in excelos-web-config.apiKeys.serper.",
       );
     }
 
@@ -206,7 +206,7 @@ const exaProvider: SearchProvider = {
     const apiKey = getApiKey(context, "exa");
     if (!apiKey) {
       throw new Error(
-        "Exa search requires an API key. Configure it in openexcel-web-config.apiKeys.exa.",
+        "Exa search requires an API key. Configure it in excelos-web-config.apiKeys.exa.",
       );
     }
 

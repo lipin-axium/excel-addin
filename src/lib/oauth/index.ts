@@ -27,7 +27,7 @@ export const OAUTH_PROVIDERS: Record<
 
 // --- Credential Storage ---
 
-const OAUTH_STORAGE_KEY = "openexcel-oauth-credentials";
+const OAUTH_STORAGE_KEY = "excelos-oauth-credentials";
 
 export function loadOAuthCredentials(
   provider: string,

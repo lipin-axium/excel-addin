@@ -96,7 +96,7 @@ export function getSessionMessageCount(session: ChatSession): number {
 export async function getOrCreateWorkbookId(): Promise<string> {
   return new Promise((resolve, reject) => {
     const settings = Office.context.document.settings;
-    let workbookId = settings.get("openexcel-workbook-id") as string | null;
+    let workbookId = settings.get("excelos-workbook-id") as string | null;
 
     if (workbookId) {
       resolve(workbookId);
@@ -104,7 +104,7 @@ export async function getOrCreateWorkbookId(): Promise<string> {
     }
 
     workbookId = crypto.randomUUID();
-    settings.set("openexcel-workbook-id", workbookId);
+    settings.set("excelos-workbook-id", workbookId);
     settings.saveAsync((result) => {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
         resolve(workbookId);

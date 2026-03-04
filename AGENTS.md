@@ -186,8 +186,8 @@ User settings stored in browser localStorage:
 
 | Key                         | Contents                                                                                           |
 | --------------------------- | -------------------------------------------------------------------------------------------------- |
-| `openexcel-provider-config` | `{ provider, apiKey, model, useProxy, proxyUrl, thinking, followMode, apiType, customBaseUrl, authMethod }` |
-| `openexcel-oauth-credentials` | `{ [provider]: { refresh, access, expires } }`                                                   |
+| `excelos-provider-config` | `{ provider, apiKey, model, useProxy, proxyUrl, thinking, followMode, apiType, customBaseUrl, authMethod }` |
+| `excelos-oauth-credentials` | `{ [provider]: { refresh, access, expires } }`                                                   |
 
 Session data (messages, VFS files, skills) stored in IndexedDB via `idb` (`OpenExcelDB_v3`).
 

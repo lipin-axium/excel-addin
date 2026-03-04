@@ -4,9 +4,9 @@ export interface McpServerConfig {
   enabled: boolean;
 }
 
-const STORAGE_KEY = "openexcel-mcp-servers";
+const STORAGE_KEY = "excelos-mcp-servers";
 // Legacy key from single-server implementation
-const LEGACY_KEY = "openexcel-mcp-config";
+const LEGACY_KEY = "excelos-mcp-config";
 
 export function loadMcpServers(): McpServerConfig[] {
   try {

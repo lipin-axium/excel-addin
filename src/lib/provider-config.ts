@@ -16,7 +16,7 @@ export interface ProviderConfig {
   authMethod?: "apikey" | "oauth";
 }
 
-const STORAGE_KEY = "openexcel-provider-config";
+const STORAGE_KEY = "excelos-provider-config";
 
 export const THINKING_LEVELS: { value: ThinkingLevel; label: string }[] = [
   { value: "none", label: "None" },
