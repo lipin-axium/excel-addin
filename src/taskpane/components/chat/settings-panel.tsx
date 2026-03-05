@@ -1,6 +1,7 @@
 import {
   Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   ExternalLink,
   Eye,
@@ -9,6 +10,7 @@ import {
   LogOut,
   Plus,
   Trash2,
+  X,
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import {
@@ -46,20 +48,52 @@ import { listFetchProviders } from "../../../lib/web/fetch";
 import { listSearchProviders } from "../../../lib/web/search";
 import { useChat } from "./chat-context";
 
-const DEFAULT_SKILL_NAMES = new Set(DEFAULT_SKILLS.map((s) => s.name));
+/** Collapsible settings section card */
+function SettingsSection({
+  title,
+  badge,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  badge?: React.ReactNode;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div
+      className="bg-(--chat-bg) border border-(--chat-border) shadow-xs overflow-hidden"
+      style={{ borderRadius: "var(--chat-radius)" }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-2 px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-(--chat-text-secondary) border-b border-(--chat-border) bg-(--chat-bg-secondary) hover:bg-(--chat-bg-tertiary) transition-colors text-left"
+      >
+        <ChevronRight
+          size={12}
+          className={`shrink-0 transition-transform ${
+            open ? "rotate-90" : ""
+          }`}
+        />
+        <span className="flex-1">{title}</span>
+        {badge && (
+          <span className="text-[10px] font-normal normal-case tracking-normal text-(--chat-text-muted)">
+            {badge}
+          </span>
+        )}
+      </button>
+      {open && <div className="p-3.5">{children}</div>}
+    </div>
+  );
+}
 
 function SkillsSection() {
   const { state, installSkill, uninstallSkill } = useChat();
   const folderInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [installing, setInstalling] = useState(false);
-
-  const preloadedSkills = state.skills.filter((s) =>
-    DEFAULT_SKILL_NAMES.has(s.name),
-  );
-  const userSkills = state.skills.filter(
-    (s) => !DEFAULT_SKILL_NAMES.has(s.name),
-  );
 
   const handleFolderSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,127 +126,65 @@ function SkillsSection() {
   );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted)">
-          agent skills
-        </div>
-        {state.skills.length > 0 && (
-          <div className="text-[10px] text-(--chat-accent) font-mono">
-            {state.skills.length} active
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        {preloadedSkills.length > 0 && (
-          <div>
-            <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted) mb-1.5">
-              preloaded skills
-            </div>
-            <div className="space-y-1">
-              {preloadedSkills.map((skill) => (
-                <div
-                  key={skill.name}
-                  className="flex items-start justify-between gap-2 px-3 py-2 bg-(--chat-input-bg) border border-(--chat-border)"
-                  style={{ borderRadius: "var(--chat-radius)" }}
+    <div className="space-y-3">
+      {/* Compact skill pills */}
+      {state.skills.length > 0 ? (
+        <div className="max-h-[140px] overflow-y-auto">
+          <div className="flex flex-wrap gap-1.5">
+            {state.skills.map((skill) => (
+              <div
+                key={skill.name}
+                className="group flex items-center gap-1 px-2 py-1 text-[11px] bg-(--chat-input-bg) border border-(--chat-border) text-(--chat-text-primary) hover:border-(--chat-border-active) transition-colors"
+                style={{ borderRadius: "var(--chat-radius)" }}
+                title={skill.description}
+              >
+                <span className="truncate max-w-[120px]">{skill.name}</span>
+                <button
+                  type="button"
+                  onClick={() => uninstallSkill(skill.name)}
+                  className="shrink-0 opacity-0 group-hover:opacity-100 text-(--chat-text-muted) hover:text-(--chat-error) transition-all"
+                  title="Remove"
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs text-(--chat-text-primary) font-medium truncate">
-                      {skill.name}
-                    </div>
-                    <div className="text-[10px] text-(--chat-text-muted) mt-0.5 line-clamp-2">
-                      {skill.description}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => uninstallSkill(skill.name)}
-                    className="shrink-0 p-1 text-(--chat-text-muted) hover:text-(--chat-error) transition-colors"
-                    title="Remove skill"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {userSkills.length > 0 ? (
-          <div>
-            {preloadedSkills.length > 0 && (
-              <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted) mb-1.5">
-                your skills
+                  <X size={10} />
+                </button>
               </div>
-            )}
-            <div className="space-y-1">
-              {userSkills.map((skill) => (
-                <div
-                  key={skill.name}
-                  className="flex items-start justify-between gap-2 px-3 py-2 bg-(--chat-input-bg) border border-(--chat-border)"
-                  style={{ borderRadius: "var(--chat-radius)" }}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs text-(--chat-text-primary) font-medium truncate">
-                      {skill.name}
-                    </div>
-                    <div className="text-[10px] text-(--chat-text-muted) mt-0.5 line-clamp-2">
-                      {skill.description}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => uninstallSkill(skill.name)}
-                    className="shrink-0 p-1 text-(--chat-text-muted) hover:text-(--chat-error) transition-colors"
-                    title="Remove skill"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
-        ) : (
-          preloadedSkills.length === 0 && (
-            <p className="text-xs text-(--chat-text-muted)">
-              No skills installed
-            </p>
-          )
-        )}
-
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => folderInputRef.current?.click()}
-            disabled={installing}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs
-                       bg-(--chat-input-bg) border border-(--chat-border) text-(--chat-text-secondary)
-                       hover:border-(--chat-border-active) hover:text-(--chat-text-primary)
-                       disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            style={{ borderRadius: "var(--chat-radius)" }}
-          >
-            <FolderUp size={12} />
-            {installing ? "Installing…" : "Add Folder"}
-          </button>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={installing}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs
-                       bg-(--chat-input-bg) border border-(--chat-border) text-(--chat-text-secondary)
-                       hover:border-(--chat-border-active) hover:text-(--chat-text-primary)
-                       disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            style={{ borderRadius: "var(--chat-radius)" }}
-          >
-            <Plus size={12} />
-            {installing ? "Installing…" : "Add File"}
-          </button>
         </div>
-        <p className="text-[10px] text-(--chat-text-muted)">
-          Add a skill folder or a single SKILL.md file. Skills must have valid
-          frontmatter with name and description.
+      ) : (
+        <p className="text-xs text-(--chat-text-muted)">
+          No skills installed
         </p>
+      )}
+
+      {/* Add buttons */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => folderInputRef.current?.click()}
+          disabled={installing}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px]
+                     bg-(--chat-input-bg) border border-(--chat-border) text-(--chat-text-secondary)
+                     hover:border-(--chat-border-active) hover:text-(--chat-text-primary)
+                     disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          style={{ borderRadius: "var(--chat-radius)" }}
+        >
+          <FolderUp size={11} />
+          {installing ? "Installing…" : "Folder"}
+        </button>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={installing}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px]
+                     bg-(--chat-input-bg) border border-(--chat-border) text-(--chat-text-secondary)
+                     hover:border-(--chat-border-active) hover:text-(--chat-text-primary)
+                     disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          style={{ borderRadius: "var(--chat-radius)" }}
+        >
+          <Plus size={11} />
+          {installing ? "Installing…" : "File"}
+        </button>
       </div>
 
       <input
@@ -602,15 +574,18 @@ export function SettingsPanel() {
 
   return (
     <div
-      className="flex-1 overflow-y-auto p-4 space-y-6"
-      style={{ fontFamily: "var(--chat-font-mono)" }}
+      className="flex-1 overflow-y-auto p-4 space-y-3"
+      style={{ fontFamily: "var(--chat-font-sans)" }}
     >
-      <div>
-        <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted) mb-4">
-          api configuration
+      {/* ─── API Configuration ─── */}
+      <div
+        className="bg-(--chat-bg) border border-(--chat-border) shadow-xs overflow-hidden"
+        style={{ borderRadius: "var(--chat-radius)" }}
+      >
+        <div className="px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-(--chat-text-secondary) border-b border-(--chat-border) bg-(--chat-bg-secondary)">
+          Provider
         </div>
-
-        <div className="space-y-4">
+        <div className="p-3.5 space-y-4">
           {/* Provider */}
           <label className="block">
             <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
@@ -950,8 +925,18 @@ export function SettingsPanel() {
               </p>
             </label>
           )}
+        </div>
+      </div>
 
-          {/* Thinking Level */}
+      {/* ─── Thinking ─── */}
+      <div
+        className="bg-(--chat-bg) border border-(--chat-border) shadow-xs overflow-hidden"
+        style={{ borderRadius: "var(--chat-radius)" }}
+      >
+        <div className="px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-(--chat-text-secondary) border-b border-(--chat-border) bg-(--chat-bg-secondary)">
+          Thinking
+        </div>
+        <div className="p-3.5">
           <div>
             <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
               Thinking Level
@@ -980,406 +965,426 @@ export function SettingsPanel() {
               Extended thinking for supported models
             </p>
           </div>
-
-          <div className="border-t border-(--chat-border) pt-4 space-y-3">
-            <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted)">
-              web tools
-            </div>
-
-            <label className="block">
-              <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
-                Default Search Provider
-              </span>
-              <select
-                value={webSearchProvider}
-                onChange={(e) =>
-                  updateWebSettings({ searchProvider: e.target.value })
-                }
-                className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
-                           text-sm px-3 py-2 border border-(--chat-border)
-                           focus:outline-none focus:border-(--chat-border-active)"
-                style={inputStyle}
-              >
-                {searchProviders.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[10px] text-(--chat-text-muted) mt-1">
-                Used by web-search.
-              </p>
-            </label>
-
-            <label className="block">
-              <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
-                Default Fetch Provider
-              </span>
-              <select
-                value={webFetchProvider}
-                onChange={(e) =>
-                  updateWebSettings({ fetchProvider: e.target.value })
-                }
-                className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
-                           text-sm px-3 py-2 border border-(--chat-border)
-                           focus:outline-none focus:border-(--chat-border-active)"
-                style={inputStyle}
-              >
-                {fetchProviders.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[10px] text-(--chat-text-muted) mt-1">
-                Used by web-fetch.
-              </p>
-            </label>
-
-            {needsBraveKey && (
-              <label className="block">
-                <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
-                  Brave API Key
-                </span>
-                <input
-                  type="password"
-                  value={braveApiKey}
-                  onChange={(e) =>
-                    updateWebSettings({ braveApiKey: e.target.value })
-                  }
-                  placeholder="Required for Brave search"
-                  className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
-                           text-sm px-3 py-2 border border-(--chat-border)
-                           placeholder:text-(--chat-text-muted)
-                           focus:outline-none focus:border-(--chat-border-active)"
-                  style={inputStyle}
-                />
-              </label>
-            )}
-
-            {needsSerperKey && (
-              <label className="block">
-                <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
-                  Serper API Key
-                </span>
-                <input
-                  type="password"
-                  value={serperApiKey}
-                  onChange={(e) =>
-                    updateWebSettings({ serperApiKey: e.target.value })
-                  }
-                  placeholder="Required for Serper search"
-                  className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
-                           text-sm px-3 py-2 border border-(--chat-border)
-                           placeholder:text-(--chat-text-muted)
-                           focus:outline-none focus:border-(--chat-border-active)"
-                  style={inputStyle}
-                />
-              </label>
-            )}
-
-            {needsExaKey && (
-              <label className="block">
-                <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
-                  Exa API Key
-                </span>
-                <input
-                  type="password"
-                  value={exaApiKey}
-                  onChange={(e) =>
-                    updateWebSettings({ exaApiKey: e.target.value })
-                  }
-                  placeholder="Required for Exa search/fetch"
-                  className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
-                           text-sm px-3 py-2 border border-(--chat-border)
-                           placeholder:text-(--chat-text-muted)
-                           focus:outline-none focus:border-(--chat-border-active)"
-                  style={inputStyle}
-                />
-              </label>
-            )}
-
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => setShowAdvancedWebKeys(!showAdvancedWebKeys)}
-                className="inline-flex items-center gap-1.5 text-xs text-(--chat-text-secondary) hover:text-(--chat-text-primary)"
-              >
-                {showAdvancedWebKeys ? (
-                  <ChevronUp size={12} />
-                ) : (
-                  <ChevronDown size={12} />
-                )}
-                <span>
-                  {showAdvancedWebKeys ? "Hide" : "Show"} advanced saved API
-                  keys
-                </span>
-              </button>
-            </div>
-
-            {showAdvancedWebKeys && (
-              <div className="space-y-3 border border-(--chat-border) p-3 bg-(--chat-input-bg)">
-                {!needsBraveKey && (
-                  <label className="block">
-                    <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
-                      Brave API Key
-                    </span>
-                    <input
-                      type="password"
-                      value={braveApiKey}
-                      onChange={(e) =>
-                        updateWebSettings({ braveApiKey: e.target.value })
-                      }
-                      placeholder="Optional"
-                      className="w-full bg-(--chat-bg) text-(--chat-text-primary)
-                           text-sm px-3 py-2 border border-(--chat-border)
-                           placeholder:text-(--chat-text-muted)
-                           focus:outline-none focus:border-(--chat-border-active)"
-                      style={inputStyle}
-                    />
-                  </label>
-                )}
-
-                {!needsSerperKey && (
-                  <label className="block">
-                    <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
-                      Serper API Key
-                    </span>
-                    <input
-                      type="password"
-                      value={serperApiKey}
-                      onChange={(e) =>
-                        updateWebSettings({ serperApiKey: e.target.value })
-                      }
-                      placeholder="Optional"
-                      className="w-full bg-(--chat-bg) text-(--chat-text-primary)
-                           text-sm px-3 py-2 border border-(--chat-border)
-                           placeholder:text-(--chat-text-muted)
-                           focus:outline-none focus:border-(--chat-border-active)"
-                      style={inputStyle}
-                    />
-                  </label>
-                )}
-
-                {!needsExaKey && (
-                  <label className="block">
-                    <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
-                      Exa API Key
-                    </span>
-                    <input
-                      type="password"
-                      value={exaApiKey}
-                      onChange={(e) =>
-                        updateWebSettings({ exaApiKey: e.target.value })
-                      }
-                      placeholder="Optional"
-                      className="w-full bg-(--chat-bg) text-(--chat-text-primary)
-                           text-sm px-3 py-2 border border-(--chat-border)
-                           placeholder:text-(--chat-text-muted)
-                           focus:outline-none focus:border-(--chat-border-active)"
-                      style={inputStyle}
-                    />
-                  </label>
-                )}
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
-      {/* MCP Server */}
-      <div className="border-t border-(--chat-border) pt-4">
-        <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted) mb-4">
-          mcp servers
+      {/* ─── Web Tools ─── */}
+      <div
+        className="bg-(--chat-bg) border border-(--chat-border) shadow-xs overflow-hidden"
+        style={{ borderRadius: "var(--chat-radius)" }}
+      >
+        <div className="px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-(--chat-text-secondary) border-b border-(--chat-border) bg-(--chat-bg-secondary)">
+          Web Tools
         </div>
+        <div className="p-3.5 space-y-3">
+          <label className="block">
+            <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+              Default Search Provider
+            </span>
+            <select
+              value={webSearchProvider}
+              onChange={(e) =>
+                updateWebSettings({ searchProvider: e.target.value })
+              }
+              className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
+                           text-sm px-3 py-2 border border-(--chat-border)
+                           focus:outline-none focus:border-(--chat-border-active)"
+              style={inputStyle}
+            >
+              {searchProviders.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-(--chat-text-muted) mt-1">
+              Used by web-search.
+            </p>
+          </label>
 
-        <div className="space-y-3">
-          {/* Existing server rows */}
-          {mcpServers.length > 0 && (
-            <div className="space-y-2">
-              {mcpServers.map((server) => {
-                const status: McpStatus = mcpStatuses[server.id] ?? {
-                  step: "idle",
-                };
-                return (
-                  <div
-                    key={server.id}
-                    className="border border-(--chat-border) bg-(--chat-input-bg) p-2.5 space-y-2"
-                    style={{ borderRadius: "var(--chat-radius)" }}
-                  >
-                    {/* URL + action buttons row */}
-                    <div className="flex gap-1">
-                      <span
-                        className="flex-1 text-xs text-(--chat-text-primary) truncate py-1.5 px-1"
-                        title={server.url}
-                      >
-                        {server.url}
-                      </span>
-                      {status.step === "connected" ? (
-                        <button
-                          type="button"
-                          onClick={() => handleMcpDisconnect(server)}
-                          className="px-2.5 py-1.5 text-xs bg-(--chat-bg) border border-(--chat-border)
-                                     text-(--chat-text-secondary) hover:border-(--chat-error)
-                                     hover:text-(--chat-error) transition-colors shrink-0"
-                          style={{ borderRadius: "var(--chat-radius)" }}
-                        >
-                          Disconnect
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleMcpConnect(server)}
-                          disabled={status.step === "connecting"}
-                          className="px-2.5 py-1.5 text-xs bg-(--chat-accent) border border-(--chat-accent)
-                                     text-white hover:opacity-90
-                                     disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
-                          style={{ borderRadius: "var(--chat-radius)" }}
-                        >
-                          {status.step === "connecting"
-                            ? "Connecting…"
-                            : "Connect"}
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveServer(server)}
-                        className="p-1.5 text-(--chat-text-muted) hover:text-(--chat-error) transition-colors shrink-0"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
+          <label className="block">
+            <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+              Default Fetch Provider
+            </span>
+            <select
+              value={webFetchProvider}
+              onChange={(e) =>
+                updateWebSettings({ fetchProvider: e.target.value })
+              }
+              className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
+                           text-sm px-3 py-2 border border-(--chat-border)
+                           focus:outline-none focus:border-(--chat-border-active)"
+              style={inputStyle}
+            >
+              {fetchProviders.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-(--chat-text-muted) mt-1">
+              Used by web-fetch.
+            </p>
+          </label>
 
-                    {/* Connected: tool list */}
-                    {status.step === "connected" && (
-                      <div className="text-[10px] space-y-0.5">
-                        <div className="flex items-center gap-1.5 text-(--chat-text-secondary)">
-                          <Check size={10} className="text-(--chat-success)" />
-                          {status.toolCount} tool
-                          {status.toolCount !== 1 ? "s" : ""} loaded
-                        </div>
-                        {status.tools.length > 0 && (
-                          <ul className="pl-4 space-y-0.5">
-                            {status.tools.map((t) => (
-                              <li
-                                key={t.name}
-                                className="text-(--chat-text-muted) truncate"
-                              >
-                                • {t.name}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Error */}
-                    {status.step === "error" && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-(--chat-error) truncate">
-                          {status.message}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleMcpConnect(server)}
-                          className="text-[10px] text-(--chat-text-muted) hover:text-(--chat-text-secondary) ml-2 shrink-0 transition-colors"
-                        >
-                          Retry
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+          {needsBraveKey && (
+            <label className="block">
+              <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+                Brave API Key
+              </span>
+              <input
+                type="password"
+                value={braveApiKey}
+                onChange={(e) =>
+                  updateWebSettings({ braveApiKey: e.target.value })
+                }
+                placeholder="Required for Brave search"
+                className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
+                           text-sm px-3 py-2 border border-(--chat-border)
+                           placeholder:text-(--chat-text-muted)
+                           focus:outline-none focus:border-(--chat-border-active)"
+                style={inputStyle}
+              />
+            </label>
           )}
 
-          {/* Add new server */}
-          <div className="flex gap-1">
-            <input
-              type="text"
-              value={newMcpUrl}
-              onChange={(e) => setNewMcpUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
-              placeholder="https://xxx.ngrok-free.app"
-              className="flex-1 bg-(--chat-input-bg) text-(--chat-text-primary)
-                         text-sm px-3 py-2 border border-(--chat-border)
-                         placeholder:text-(--chat-text-muted)
-                         focus:outline-none focus:border-(--chat-border-active)"
-              style={inputStyle}
-            />
+          {needsSerperKey && (
+            <label className="block">
+              <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+                Serper API Key
+              </span>
+              <input
+                type="password"
+                value={serperApiKey}
+                onChange={(e) =>
+                  updateWebSettings({ serperApiKey: e.target.value })
+                }
+                placeholder="Required for Serper search"
+                className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
+                           text-sm px-3 py-2 border border-(--chat-border)
+                           placeholder:text-(--chat-text-muted)
+                           focus:outline-none focus:border-(--chat-border-active)"
+                style={inputStyle}
+              />
+            </label>
+          )}
+
+          {needsExaKey && (
+            <label className="block">
+              <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+                Exa API Key
+              </span>
+              <input
+                type="password"
+                value={exaApiKey}
+                onChange={(e) =>
+                  updateWebSettings({ exaApiKey: e.target.value })
+                }
+                placeholder="Required for Exa search/fetch"
+                className="w-full bg-(--chat-input-bg) text-(--chat-text-primary)
+                           text-sm px-3 py-2 border border-(--chat-border)
+                           placeholder:text-(--chat-text-muted)
+                           focus:outline-none focus:border-(--chat-border-active)"
+                style={inputStyle}
+              />
+            </label>
+          )}
+
+          <div className="pt-1">
             <button
               type="button"
-              onClick={handleAddServer}
-              disabled={!newMcpUrl.trim()}
-              className="px-3 py-2 text-xs bg-(--chat-input-bg) border border-(--chat-border)
-                         text-(--chat-text-secondary) hover:border-(--chat-border-active)
-                         hover:text-(--chat-text-primary)
-                         disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              style={{ borderRadius: "var(--chat-radius)" }}
+              onClick={() => setShowAdvancedWebKeys(!showAdvancedWebKeys)}
+              className="inline-flex items-center gap-1.5 text-xs text-(--chat-text-secondary) hover:text-(--chat-text-primary)"
             >
-              <Plus size={12} />
+              {showAdvancedWebKeys ? (
+                <ChevronUp size={12} />
+              ) : (
+                <ChevronDown size={12} />
+              )}
+              <span>
+                {showAdvancedWebKeys ? "Hide" : "Show"} advanced saved API keys
+              </span>
             </button>
           </div>
 
-          <p className="text-[10px] text-(--chat-text-muted)">
-            Add URL then click Connect. Servers must allow CORS or use the CORS
-            proxy above.
-          </p>
-        </div>
-      </div>
+          {showAdvancedWebKeys && (
+            <div className="space-y-3 border border-(--chat-border) p-3 bg-(--chat-input-bg)">
+              {!needsBraveKey && (
+                <label className="block">
+                  <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+                    Brave API Key
+                  </span>
+                  <input
+                    type="password"
+                    value={braveApiKey}
+                    onChange={(e) =>
+                      updateWebSettings({ braveApiKey: e.target.value })
+                    }
+                    placeholder="Optional"
+                    className="w-full bg-(--chat-bg) text-(--chat-text-primary)
+                           text-sm px-3 py-2 border border-(--chat-border)
+                           placeholder:text-(--chat-text-muted)
+                           focus:outline-none focus:border-(--chat-border-active)"
+                    style={inputStyle}
+                  />
+                </label>
+              )}
 
-      {/* Status */}
-      <div className="border-t border-(--chat-border) pt-4">
-        <div className="flex items-center gap-2 text-xs">
-          {isConfigured ? (
-            <>
-              <Check size={12} className="text-(--chat-success)" />
-              <span className="text-(--chat-text-secondary)">
-                Using{" "}
-                {state.providerConfig?.provider === "custom"
-                  ? `custom (${state.providerConfig?.apiType})`
-                  : state.providerConfig?.provider}
-                {state.providerConfig?.authMethod === "oauth" && " via OAuth"}
-              </span>
-            </>
-          ) : (
-            <span className="text-(--chat-text-muted)">
-              Fill in all fields above to get started
-            </span>
+              {!needsSerperKey && (
+                <label className="block">
+                  <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+                    Serper API Key
+                  </span>
+                  <input
+                    type="password"
+                    value={serperApiKey}
+                    onChange={(e) =>
+                      updateWebSettings({ serperApiKey: e.target.value })
+                    }
+                    placeholder="Optional"
+                    className="w-full bg-(--chat-bg) text-(--chat-text-primary)
+                           text-sm px-3 py-2 border border-(--chat-border)
+                           placeholder:text-(--chat-text-muted)
+                           focus:outline-none focus:border-(--chat-border-active)"
+                    style={inputStyle}
+                  />
+                </label>
+              )}
+
+              {!needsExaKey && (
+                <label className="block">
+                  <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+                    Exa API Key
+                  </span>
+                  <input
+                    type="password"
+                    value={exaApiKey}
+                    onChange={(e) =>
+                      updateWebSettings({ exaApiKey: e.target.value })
+                    }
+                    placeholder="Optional"
+                    className="w-full bg-(--chat-bg) text-(--chat-text-primary)
+                           text-sm px-3 py-2 border border-(--chat-border)
+                           placeholder:text-(--chat-text-muted)
+                           focus:outline-none focus:border-(--chat-border-active)"
+                    style={inputStyle}
+                  />
+                </label>
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      {/* Skills */}
-      <div className="border-t border-(--chat-border) pt-4">
-        <SkillsSection />
+      {/* ─── MCP Servers ─── */}
+      <div
+        className="bg-(--chat-bg) border border-(--chat-border) shadow-xs overflow-hidden"
+        style={{ borderRadius: "var(--chat-radius)" }}
+      >
+        <div className="px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-(--chat-text-secondary) border-b border-(--chat-border) bg-(--chat-bg-secondary)">
+          MCP Servers
+        </div>
+        <div className="p-3.5">
+          <div className="space-y-3">
+            {/* Existing server rows */}
+            {mcpServers.length > 0 && (
+              <div className="space-y-2">
+                {mcpServers.map((server) => {
+                  const status: McpStatus = mcpStatuses[server.id] ?? {
+                    step: "idle",
+                  };
+                  return (
+                    <div
+                      key={server.id}
+                      className="border border-(--chat-border) bg-(--chat-input-bg) p-2.5 space-y-2"
+                      style={{ borderRadius: "var(--chat-radius)" }}
+                    >
+                      {/* URL + action buttons row */}
+                      <div className="flex gap-1">
+                        <span
+                          className="flex-1 text-xs text-(--chat-text-primary) truncate py-1.5 px-1"
+                          title={server.url}
+                        >
+                          {server.url}
+                        </span>
+                        {status.step === "connected" ? (
+                          <button
+                            type="button"
+                            onClick={() => handleMcpDisconnect(server)}
+                            className="px-2.5 py-1.5 text-xs bg-(--chat-bg) border border-(--chat-border)
+                                     text-(--chat-text-secondary) hover:border-(--chat-error)
+                                     hover:text-(--chat-error) transition-colors shrink-0"
+                            style={{ borderRadius: "var(--chat-radius)" }}
+                          >
+                            Disconnect
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleMcpConnect(server)}
+                            disabled={status.step === "connecting"}
+                            className="px-2.5 py-1.5 text-xs bg-(--chat-accent) border border-(--chat-accent)
+                                     text-white hover:opacity-90
+                                     disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+                            style={{ borderRadius: "var(--chat-radius)" }}
+                          >
+                            {status.step === "connecting"
+                              ? "Connecting…"
+                              : "Connect"}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveServer(server)}
+                          className="p-1.5 text-(--chat-text-muted) hover:text-(--chat-error) transition-colors shrink-0"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+
+                      {/* Connected: tool list */}
+                      {status.step === "connected" && (
+                        <div className="text-[10px] space-y-0.5">
+                          <div className="flex items-center gap-1.5 text-(--chat-text-secondary)">
+                            <Check
+                              size={10}
+                              className="text-(--chat-success)"
+                            />
+                            {status.toolCount} tool
+                            {status.toolCount !== 1 ? "s" : ""} loaded
+                          </div>
+                          {status.tools.length > 0 && (
+                            <ul className="pl-4 space-y-0.5">
+                              {status.tools.map((t) => (
+                                <li
+                                  key={t.name}
+                                  className="text-(--chat-text-muted) truncate"
+                                >
+                                  • {t.name}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Error */}
+                      {status.step === "error" && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-(--chat-error) truncate">
+                            {status.message}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleMcpConnect(server)}
+                            className="text-[10px] text-(--chat-text-muted) hover:text-(--chat-text-secondary) ml-2 shrink-0 transition-colors"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Add new server */}
+            <div className="flex gap-1">
+              <input
+                type="text"
+                value={newMcpUrl}
+                onChange={(e) => setNewMcpUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
+                placeholder="https://xxx.ngrok-free.app"
+                className="flex-1 bg-(--chat-input-bg) text-(--chat-text-primary)
+                         text-sm px-3 py-2 border border-(--chat-border)
+                         placeholder:text-(--chat-text-muted)
+                         focus:outline-none focus:border-(--chat-border-active)"
+                style={inputStyle}
+              />
+              <button
+                type="button"
+                onClick={handleAddServer}
+                disabled={!newMcpUrl.trim()}
+                className="px-3 py-2 text-xs bg-(--chat-input-bg) border border-(--chat-border)
+                         text-(--chat-text-secondary) hover:border-(--chat-border-active)
+                         hover:text-(--chat-text-primary)
+                         disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{ borderRadius: "var(--chat-radius)" }}
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+
+            <p className="text-[10px] text-(--chat-text-muted)">
+              Add URL then click Connect. Servers must allow CORS or use the
+              CORS proxy above.
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* About */}
-      <div className="border-t border-(--chat-border) pt-4">
-        <div className="text-[10px] uppercase tracking-widest text-(--chat-text-muted) mb-2">
-          about
+      {/* ─── Skills ─── */}
+      <div
+        className="bg-(--chat-bg) border border-(--chat-border) shadow-xs overflow-hidden"
+        style={{ borderRadius: "var(--chat-radius)" }}
+      >
+        <div className="px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-(--chat-text-secondary) border-b border-(--chat-border) bg-(--chat-bg-secondary)">
+          Agent Skills
         </div>
-        <p className="text-xs text-(--chat-text-secondary) leading-relaxed">
-          ExcelOS uses your own API key to connect to LLM providers. Your key is
-          stored locally in the browser.
-        </p>
-        {isCustom && (
-          <p className="text-xs text-(--chat-text-muted) leading-relaxed mt-2">
-            Custom Endpoint: Point to any OpenAI-compatible API (Ollama, vLLM,
-            LMStudio) or other supported API types.
+        <div className="p-3.5">
+          <SkillsSection />
+        </div>
+      </div>
+
+      {/* ─── About ─── */}
+      <div
+        className="bg-(--chat-bg) border border-(--chat-border) shadow-xs overflow-hidden"
+        style={{ borderRadius: "var(--chat-radius)" }}
+      >
+        <div className="px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-(--chat-text-secondary) border-b border-(--chat-border) bg-(--chat-bg-secondary)">
+          About
+        </div>
+        <div className="p-3.5">
+          <div className="flex items-center gap-2 text-xs mb-2">
+            {isConfigured ? (
+              <>
+                <Check size={12} className="text-(--chat-success)" />
+                <span className="text-(--chat-text-secondary)">
+                  Using{" "}
+                  {state.providerConfig?.provider === "custom"
+                    ? `custom (${state.providerConfig?.apiType})`
+                    : state.providerConfig?.provider}
+                  {state.providerConfig?.authMethod === "oauth" && " via OAuth"}
+                </span>
+              </>
+            ) : (
+              <span className="text-(--chat-text-muted)">
+                Fill in all fields above to get started
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-(--chat-text-secondary) leading-relaxed">
+            ExcelOS uses your own API key to connect to LLM providers. Your key
+            is stored locally in the browser.
           </p>
-        )}
-        {useProxy && (
-          <p className="text-xs text-(--chat-text-muted) leading-relaxed mt-2">
-            CORS Proxy: Requests route through your proxy to bypass browser CORS
-            restrictions. Required for Claude OAuth and some providers.
+          {isCustom && (
+            <p className="text-xs text-(--chat-text-muted) leading-relaxed mt-2">
+              Custom Endpoint: Point to any OpenAI-compatible API (Ollama, vLLM,
+              LMStudio) or other supported API types.
+            </p>
+          )}
+          {useProxy && (
+            <p className="text-xs text-(--chat-text-muted) leading-relaxed mt-2">
+              CORS Proxy: Requests route through your proxy to bypass browser
+              CORS restrictions. Required for Claude OAuth and some providers.
+            </p>
+          )}
+          <p className="text-[10px] text-(--chat-text-muted) mt-3">
+            v{__APP_VERSION__}
           </p>
-        )}
-        <p className="text-[10px] text-(--chat-text-muted) mt-3">
-          v{__APP_VERSION__}
-        </p>
+        </div>
       </div>
     </div>
   );

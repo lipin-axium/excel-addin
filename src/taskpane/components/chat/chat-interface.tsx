@@ -4,6 +4,7 @@ import {
   Eye,
   EyeOff,
   FunctionSquare,
+  Grid3X3,
   MessageSquare,
   Moon,
   Plus,
@@ -80,8 +81,8 @@ function StatsBar() {
 
   return (
     <div
-      className="flex items-center justify-between px-3 py-1.5 text-[10px] border-t border-(--chat-border) bg-(--chat-bg-secondary) text-(--chat-text-muted)"
-      style={{ fontFamily: "var(--chat-font-mono)" }}
+      className="px-3 py-1.5 text-[10px] border-t border-(--chat-border) bg-(--chat-bg-secondary) text-(--chat-text-muted)"
+      style={{ fontFamily: "var(--chat-font-sans)" }}
     >
       <div className="flex items-center gap-3">
         <span title="Input tokens">
@@ -107,7 +108,7 @@ function StatsBar() {
           </span>
         )}
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 mt-0.5">
         <span>{providerConfig.provider}</span>
         <span className="text-(--chat-text-secondary)">
           {providerConfig.model}
@@ -136,15 +137,15 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={`
-        flex items-center gap-1.5 px-3 py-2 text-xs uppercase tracking-wider
-        border-b-2 transition-colors
+        flex items-center gap-1.5 px-3.5 py-2.5 text-[13px] font-medium
+        border-b-2 transition-colors -mb-px
         ${
           active
-            ? "border-(--chat-accent) text-(--chat-text-primary)"
-            : "border-transparent text-(--chat-text-muted) hover:text-(--chat-text-secondary)"
+            ? "border-(--chat-accent) text-(--chat-accent)"
+            : "border-transparent text-(--chat-text-secondary) hover:text-(--chat-text-primary)"
         }
       `}
-      style={{ fontFamily: "var(--chat-font-mono)" }}
+      style={{ fontFamily: "var(--chat-font-sans)" }}
     >
       {children}
     </button>
@@ -194,13 +195,13 @@ function SessionDropdown({ onSelect }: { onSelect: () => void }) {
         type="button"
         onClick={() => setOpen(!open)}
         className={`
-          flex items-center gap-1 px-3 py-2 text-xs uppercase tracking-wider
-          border-b-2 border-(--chat-accent) text-(--chat-text-primary) transition-colors
+          flex items-center gap-1.5 px-3.5 py-2.5 text-[13px] font-medium
+          border-b-2 border-(--chat-accent) text-(--chat-accent) transition-colors -mb-px
         `}
-        style={{ fontFamily: "var(--chat-font-mono)" }}
+        style={{ fontFamily: "var(--chat-font-sans)" }}
       >
-        <MessageSquare size={12} />
-        <span className="max-w-[100px] truncate">{truncatedName}</span>
+        <MessageSquare size={14} />
+        <span className="max-w-[110px] truncate">{truncatedName}</span>
         <ChevronDown
           size={12}
           className={`transition-transform ${open ? "rotate-180" : ""}`}
@@ -209,14 +210,17 @@ function SessionDropdown({ onSelect }: { onSelect: () => void }) {
 
       {open && (
         <div
-          className="absolute top-full left-0 mt-1 w-56 bg-(--chat-bg) border border-(--chat-border) rounded shadow-lg z-50 overflow-hidden"
-          style={{ fontFamily: "var(--chat-font-mono)" }}
+          className="absolute top-full left-0 mt-1 w-56 bg-(--chat-bg) border border-(--chat-border) shadow-lg z-50 overflow-hidden"
+          style={{
+            fontFamily: "var(--chat-font-sans)",
+            borderRadius: "var(--chat-radius)",
+          }}
         >
           <button
             type="button"
             onClick={handleNewSession}
             disabled={isStreaming}
-            className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors border-b border-(--chat-border) ${
+            className={`w-full flex items-center gap-2 px-3 py-2.5 text-[13px] font-medium transition-colors border-b border-(--chat-border) ${
               isStreaming
                 ? "text-(--chat-text-muted) cursor-not-allowed"
                 : "text-(--chat-accent) hover:bg-(--chat-bg-secondary)"
@@ -236,7 +240,7 @@ function SessionDropdown({ onSelect }: { onSelect: () => void }) {
                   key={session.id}
                   disabled={isDisabled}
                   className={`
-                    flex items-center justify-between px-3 py-2 text-xs transition-colors w-full text-left
+                    flex items-center justify-between px-3 py-2 text-[12.5px] transition-colors w-full text-left
                     ${isCurrent ? "bg-(--chat-bg-secondary)" : ""}
                     ${isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-(--chat-bg-secondary)"}
                   `}
@@ -303,64 +307,109 @@ function ChatHeader({
   const followMode = state.providerConfig?.followMode ?? true;
 
   return (
-    <div className="border-b border-(--chat-border) bg-(--chat-bg)">
-      <div className="flex items-center justify-between px-2">
-        <div className="flex">
-          {activeTab === "chat" ? (
-            <SessionDropdown onSelect={() => onTabChange("chat")} />
-          ) : (
-            <TabButton active={false} onClick={() => onTabChange("chat")}>
-              <MessageSquare size={12} />
-              Chat
-            </TabButton>
-          )}
-          <TabButton
-            active={activeTab === "settings"}
-            onClick={() => onTabChange("settings")}
-          >
-            <Settings size={12} />
-            Settings
-          </TabButton>
-          <TabButton
-            active={activeTab === "formula"}
-            onClick={() => onTabChange("formula")}
-          >
-            <FunctionSquare size={12} />
-            Formula
-          </TabButton>
-        </div>
-        <div className="flex items-center pr-6">
-          {activeTab === "chat" && (
+    <div className="shrink-0 bg-(--chat-bg)">
+      {/* ─── Brand bar ─── */}
+      <div className="header-gradient-line">
+        <div className="flex items-center justify-between px-4 h-[44px]">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-6 h-6 shrink-0 flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--chat-accent) 0%, #8b5cf6 100%)",
+                borderRadius: "6px",
+              }}
+            >
+              <Grid3X3 size={13} className="text-white" />
+            </div>
+            <span
+              className="text-sm font-semibold text-(--chat-text-primary)"
+              style={{
+                fontFamily: "var(--chat-font-sans)",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              ExcelOS
+            </span>
+            <span
+              className="text-[9px] text-(--chat-text-muted)"
+              style={{
+                fontFamily: "var(--chat-font-sans)",
+                letterSpacing: "0.05em",
+              }}
+            >
+              v0.2
+            </span>
+          </div>
+          <div className="flex items-center gap-0.5">
+            {state.mcpTools.length > 0 && (
+              <div
+                className="flex items-center gap-1 px-2 text-[10px] text-green-500"
+                style={{ fontFamily: "var(--chat-font-sans)" }}
+                title={`${state.mcpTools.length} MCP tool${state.mcpTools.length === 1 ? "" : "s"} connected`}
+              >
+                <span className="mcp-indicator-dot" />
+                <span>MCP</span>
+              </div>
+            )}
+            {activeTab === "chat" && (
+              <button
+                type="button"
+                onClick={toggleFollowMode}
+                className={`p-1.5 transition-colors ${
+                  followMode
+                    ? "text-(--chat-accent) hover:text-(--chat-text-primary)"
+                    : "text-(--chat-text-muted) hover:text-(--chat-text-primary)"
+                }`}
+              >
+                {followMode ? <Eye size={14} /> : <EyeOff size={14} />}
+              </button>
+            )}
             <button
               type="button"
-              onClick={toggleFollowMode}
-              className={`p-1.5 transition-colors ${
-                followMode
-                  ? "text-(--chat-accent) hover:text-(--chat-text-primary)"
-                  : "text-(--chat-text-muted) hover:text-(--chat-text-primary)"
-              }`}
+              onClick={onThemeToggle}
+              className="p-1.5 text-(--chat-text-muted) hover:text-(--chat-text-primary) transition-colors"
             >
-              {followMode ? <Eye size={14} /> : <EyeOff size={14} />}
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={onThemeToggle}
-            className="p-1.5 text-(--chat-text-muted) hover:text-(--chat-text-primary) transition-colors"
-          >
-            {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
-          {activeTab === "chat" && state.messages.length > 0 && (
-            <button
-              type="button"
-              onClick={clearMessages}
-              className="p-1.5 text-(--chat-text-muted) hover:text-(--chat-error) transition-colors"
-              title="Clear messages"
-            >
-              <Trash2 size={14} />
-            </button>
-          )}
+            {activeTab === "chat" && state.messages.length > 0 && (
+              <button
+                type="button"
+                onClick={clearMessages}
+                className="p-1.5 text-(--chat-text-muted) hover:text-(--chat-error) transition-colors"
+                title="Clear messages"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
         </div>
+      </div>
+
+      {/* ─── Tab bar ─── */}
+      <div className="flex items-stretch px-4 border-b border-(--chat-border)">
+        {activeTab === "chat" ? (
+          <SessionDropdown onSelect={() => onTabChange("chat")} />
+        ) : (
+          <TabButton active={false} onClick={() => onTabChange("chat")}>
+            <MessageSquare size={14} />
+            Chat
+          </TabButton>
+        )}
+        <TabButton
+          active={activeTab === "formula"}
+          onClick={() => onTabChange("formula")}
+        >
+          <FunctionSquare size={14} />
+          Formula
+        </TabButton>
+        <TabButton
+          active={activeTab === "settings"}
+          onClick={() => onTabChange("settings")}
+        >
+          <Settings size={14} />
+          Settings
+        </TabButton>
       </div>
     </div>
   );
@@ -413,8 +462,8 @@ function ChatContent() {
   return (
     <div
       role="application"
-      className="flex flex-col h-full bg-(--chat-bg) relative"
-      style={{ fontFamily: "var(--chat-font-mono)" }}
+      className="flex flex-col h-full bg-(--chat-bg) chat-dot-grid relative overflow-hidden"
+      style={{ fontFamily: "var(--chat-font-sans)", borderRadius: "10px" }}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}

@@ -110,7 +110,7 @@ export function ChatInput() {
   return (
     <div
       className="border-t border-(--chat-border) px-3 py-2 bg-(--chat-bg)"
-      style={{ fontFamily: "var(--chat-font-mono)" }}
+      style={{ fontFamily: "var(--chat-font-sans)" }}
     >
       {state.error && (
         <div className="text-(--chat-error) text-xs mb-2 px-1">
@@ -160,21 +160,24 @@ export function ChatInput() {
 
       {/* Selection indicator */}
       {selectedAddress && (
-        <div className="flex items-center gap-1 mb-1 px-0.5">
-          <span className="text-[10px] text-(--chat-text-muted)">
-            selecting
-          </span>
+        <div className="flex items-center gap-1.5 mb-1.5 px-0.5">
+          <Table2 size={12} className="text-(--chat-accent) shrink-0" />
           <span
-            className={`text-[10px] font-mono ${includeSelection ? "text-(--chat-accent)" : "text-(--chat-text-muted)"}`}
+            className={`text-[11px] ${
+              includeSelection
+                ? "text-(--chat-accent)"
+                : "text-(--chat-text-secondary)"
+            }`}
+            style={{ fontFamily: "var(--chat-font-sans)" }}
           >
-            {selectedAddress}
+            {selectedAddress} selected
           </span>
         </div>
       )}
 
       {/* Input container — border on wrapper, textarea + action row inside */}
       <div
-        className="bg-(--chat-input-bg) border border-(--chat-border) focus-within:border-(--chat-border-active) transition-colors"
+        className="bg-(--chat-input-bg) border border-(--chat-border) shadow-sm transition-colors focus-within:border-(--chat-border-active)"
         style={{ borderRadius: "var(--chat-radius)" }}
       >
         <textarea
@@ -184,7 +187,7 @@ export function ChatInput() {
           onKeyDown={handleKeyDown}
           placeholder={
             state.providerConfig
-              ? "Type a message..."
+              ? "Ask anything about your spreadsheet..."
               : "Configure API key in settings"
           }
           disabled={!state.providerConfig}
@@ -195,7 +198,7 @@ export function ChatInput() {
             disabled:opacity-50 disabled:cursor-not-allowed
           `}
           style={{
-            fontFamily: "var(--chat-font-mono)",
+            fontFamily: "var(--chat-font-sans)",
             lineHeight: `${LINE_HEIGHT}px`,
             height: `${LINE_HEIGHT * MIN_ROWS}px`,
           }}
@@ -244,8 +247,8 @@ export function ChatInput() {
             <button
               type="button"
               onClick={abort}
-              className="flex items-center justify-center w-6 h-5
-                         text-(--chat-error) hover:text-(--chat-bg) hover:bg-(--chat-error)
+              className="flex items-center justify-center w-[30px] h-[30px]
+                         text-white bg-(--chat-error) hover:opacity-90
                          transition-colors"
               style={{ borderRadius: "var(--chat-radius)" }}
             >
@@ -256,12 +259,13 @@ export function ChatInput() {
               type="button"
               onClick={handleSubmit}
               disabled={!state.providerConfig || !input.trim()}
-              className="flex items-center justify-center w-6 h-5
-                         text-(--chat-text-muted) hover:text-(--chat-text-primary)
+              className="flex items-center justify-center w-[30px] h-[30px]
+                         text-white bg-(--chat-accent) hover:opacity-90
                          disabled:opacity-30 disabled:cursor-not-allowed
                          transition-colors"
+              style={{ borderRadius: "var(--chat-radius)" }}
             >
-              <Send size={13} />
+              <Send size={14} />
             </button>
           )}
         </div>

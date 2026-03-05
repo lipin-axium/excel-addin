@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   Edit3,
+  Grid3X3,
   Loader2,
   Wrench,
   XCircle,
@@ -185,8 +186,17 @@ function ToolCallBlock({ part }: { part: ToolCallPart }) {
     error: <XCircle size={10} className="text-red-500" />,
   }[part.status];
 
+  const borderColor = {
+    pending: "border-l-[var(--chat-accent)]",
+    running: "border-l-[var(--chat-accent)]",
+    complete: "border-l-green-500",
+    error: "border-l-red-500",
+  }[part.status];
+
   return (
-    <div className="mt-3 mb-2 border border-(--chat-border) bg-(--chat-bg) rounded-sm overflow-hidden">
+    <div
+      className={`mt-3 mb-2 border border-(--chat-border) border-l-2 ${borderColor} bg-(--chat-bg) rounded-sm overflow-hidden`}
+    >
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -263,7 +273,7 @@ function LoadingIndicator() {
   return (
     <div
       className="flex items-center gap-2 text-(--chat-text-muted) text-sm"
-      style={{ fontFamily: "var(--chat-font-mono)" }}
+      style={{ fontFamily: "var(--chat-font-sans)" }}
     >
       <Loader2 size={14} className="animate-spin" />
       <span>thinking...</span>
@@ -375,14 +385,23 @@ function renderParts(
 
 function UserBubble({ message }: { message: ChatMessage }) {
   return (
-    <div
-      className="ml-8 px-3 py-2 text-sm leading-relaxed bg-(--chat-user-bg) border border-(--chat-border)"
-      style={{
-        borderRadius: "var(--chat-radius)",
-        fontFamily: "var(--chat-font-mono)",
-      }}
-    >
-      {renderParts(message.parts, false, message.id)}
+    <div className="flex flex-col items-end gap-1">
+      <span
+        className="text-[11px] text-(--chat-text-muted) font-medium mr-1"
+        style={{ fontFamily: "var(--chat-font-sans)" }}
+      >
+        You
+      </span>
+      <div
+        className="ml-8 px-3.5 py-2.5 text-[13px] leading-relaxed bg-(--chat-user-bg) border border-(--chat-border) shadow-xs"
+        style={{
+          borderRadius:
+            "var(--chat-radius) 2px var(--chat-radius) var(--chat-radius)",
+          fontFamily: "var(--chat-font-sans)",
+        }}
+      >
+        {renderParts(message.parts, false, message.id)}
+      </div>
     </div>
   );
 }
@@ -409,38 +428,54 @@ function AssistantBubble({
   }
 
   return (
-    <div
-      className="text-sm leading-relaxed"
-      style={{ fontFamily: "var(--chat-font-mono)" }}
-    >
-      {allParts.map(({ part, messageId, isLast }, idx) => {
-        const key =
-          part.type === "toolCall"
-            ? part.id
-            : `${messageId}-${part.type}-${idx}`;
-        if (part.type === "thinking") {
+    <div className="flex gap-2.5 items-start">
+      <div
+        className="w-[26px] h-[26px] shrink-0 flex items-center justify-center mt-0.5"
+        style={{
+          background:
+            "linear-gradient(135deg, var(--chat-accent) 0%, #8b5cf6 100%)",
+          borderRadius: "50%",
+        }}
+      >
+        <Grid3X3 size={12} className="text-white" />
+      </div>
+      <div
+        className="flex-1 min-w-0 text-[13px] leading-relaxed border border-(--chat-border) bg-(--chat-assistant-bg) shadow-sm px-3.5 py-2.5"
+        style={{
+          borderRadius:
+            "2px var(--chat-radius) var(--chat-radius) var(--chat-radius)",
+          fontFamily: "var(--chat-font-sans)",
+        }}
+      >
+        {allParts.map(({ part, messageId, isLast }, idx) => {
+          const key =
+            part.type === "toolCall"
+              ? part.id
+              : `${messageId}-${part.type}-${idx}`;
+          if (part.type === "thinking") {
+            return (
+              <ThinkingBlock
+                key={key}
+                thinking={part.thinking}
+                isStreaming={isStreaming && isLast}
+              />
+            );
+          }
+          if (part.type === "toolCall") {
+            return <ToolCallBlock key={key} part={part} />;
+          }
           return (
-            <ThinkingBlock
+            <MarkdownContent
               key={key}
-              thinking={part.thinking}
-              isStreaming={isStreaming && isLast}
+              text={part.text}
+              isAnimating={isStreaming && isLast && part.type === "text"}
             />
           );
-        }
-        if (part.type === "toolCall") {
-          return <ToolCallBlock key={key} part={part} />;
-        }
-        return (
-          <MarkdownContent
-            key={key}
-            text={part.text}
-            isAnimating={isStreaming && isLast && part.type === "text"}
-          />
-        );
-      })}
-      {isStreaming && allParts.length === 0 && (
-        <span className="animate-pulse">▊</span>
-      )}
+        })}
+        {isStreaming && allParts.length === 0 && (
+          <span className="animate-pulse">▊</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -496,7 +531,7 @@ export function MessageList() {
     return (
       <div
         className="flex-1 flex flex-col items-center justify-center p-6 text-center"
-        style={{ fontFamily: "var(--chat-font-mono)" }}
+        style={{ fontFamily: "var(--chat-font-sans)" }}
       >
         <div className="text-(--chat-text-muted) text-xs uppercase tracking-widest mb-2">
           no messages

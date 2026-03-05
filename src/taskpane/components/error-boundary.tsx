@@ -46,7 +46,7 @@ export class ErrorBoundary extends Component<
     return (
       <div
         className="h-screen w-full flex items-center justify-center bg-(--chat-bg) px-4"
-        style={{ fontFamily: "var(--chat-font-mono)" }}
+        style={{ fontFamily: "var(--chat-font-sans)" }}
       >
         <div className="w-full max-w-xl border border-(--chat-border) bg-(--chat-bg-secondary) p-4 space-y-3">
           <div className="text-xs uppercase tracking-widest text-(--chat-text-muted)">
