@@ -28,7 +28,8 @@
     "start": "office-addin-debugging start manifest.xml",
     "stop": "office-addin-debugging stop manifest.xml",
     "validate": "office-addin-manifest validate manifest.xml && office-addin-manifest validate manifest.prod.xml",
-    "watch": "vite build --mode development --watch"
+    "watch": "vite build --mode development --watch",
+    "prepare": "husky"
   },
   "dependencies": {
     "@mariozechner/pi-agent-core": "^0.54.0",
@@ -58,6 +59,7 @@
     "@types/react-dom": "^18.2.21",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.24",
+    "husky": "^9.1.7",
     "office-addin-cli": "^2.0.3",
     "office-addin-debugging": "^6.0.3",
     "office-addin-dev-certs": "^2.0.3",
