@@ -35,11 +35,7 @@ const THEME_KEY = "excelos-theme";
 function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem(THEME_KEY) as Theme | null;
-    const initial =
-      saved ??
-      (window.matchMedia("(prefers-color-scheme: light)").matches
-        ? "light"
-        : "dark");
+    const initial = saved ?? "light";
     document.documentElement.setAttribute("data-theme", initial);
     return initial;
   });
