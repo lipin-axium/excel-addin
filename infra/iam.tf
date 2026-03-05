@@ -19,14 +19,19 @@ resource "aws_iam_user_policy" "ci_deploy" {
         ]
         Resource = [
           aws_s3_bucket.static.arn,
-          "${aws_s3_bucket.static.arn}/*"
+          "${aws_s3_bucket.static.arn}/*",
+          aws_s3_bucket.managed.arn,
+          "${aws_s3_bucket.managed.arn}/*"
         ]
       },
       {
         Sid    = "CloudFrontInvalidate"
         Effect = "Allow"
         Action = "cloudfront:CreateInvalidation"
-        Resource = aws_cloudfront_distribution.static.arn
+        Resource = [
+          aws_cloudfront_distribution.static.arn,
+          aws_cloudfront_distribution.managed.arn
+        ]
       }
     ]
   })

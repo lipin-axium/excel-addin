@@ -28,19 +28,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
+      # ─── Power build ───────────────────────────────────────
+      - name: Build (power)
         run: pnpm build
         env:
+          VITE_APP_MODE: power
           VITE_PROD_URL: ${{ secrets.VITE_PROD_URL }}
 
-      - name: Deploy to S3
+      - name: Deploy to S3 (power)
         run: aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ap-southeast-1
 
-      - name: Invalidate CloudFront cache
+      - name: Invalidate CloudFront (power)
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
@@ -50,6 +52,31 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ap-southeast-1
 
+      # ─── Managed build ─────────────────────────────────────
+      - name: Build (managed)
+        run: pnpm build
+        env:
+          VITE_APP_MODE: managed
+          VITE_MANAGED_PROD_URL: ${{ secrets.VITE_MANAGED_PROD_URL }}
+
+      - name: Deploy to S3 (managed)
+        run: aws s3 sync dist/ s3://${{ secrets.AWS_MANAGED_S3_BUCKET }} --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-1
+
+      - name: Invalidate CloudFront (managed)
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.AWS_MANAGED_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-1
+
+      # ─── GitHub Release ─────────────────────────────────────
       - name: Extract changelog
         id: changelog
         run: |

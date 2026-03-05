@@ -23,3 +23,18 @@ output "iam_secret_access_key" {
   value       = aws_iam_access_key.ci.secret
   sensitive   = true
 }
+
+output "managed_cloudfront_url" {
+  description = "Managed CloudFront URL — use as VITE_MANAGED_PROD_URL secret (with trailing slash)"
+  value       = "https://${aws_cloudfront_distribution.managed.domain_name}/"
+}
+
+output "managed_cloudfront_distribution_id" {
+  description = "Managed CloudFront distribution ID — use as AWS_MANAGED_CLOUDFRONT_DISTRIBUTION_ID secret"
+  value       = aws_cloudfront_distribution.managed.id
+}
+
+output "managed_s3_bucket_name" {
+  description = "Managed S3 bucket name — use as AWS_MANAGED_S3_BUCKET secret"
+  value       = aws_s3_bucket.managed.bucket
+}
