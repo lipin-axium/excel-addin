@@ -26,7 +26,11 @@ async function getHttpsOptions() {
 export default defineConfig(async ({ mode }) => {
   const dev = mode === "development";
   const urlDev = "https://localhost:3000/";
-  const urlProd = process.env.VITE_PROD_URL ?? "https://excelos.pages.dev/";
+  const appMode = process.env.VITE_APP_MODE ?? "power";
+  const urlProd =
+    appMode === "managed"
+      ? (process.env.VITE_MANAGED_PROD_URL ?? "https://excelos.pages.dev/")
+      : (process.env.VITE_PROD_URL ?? "https://excelos.pages.dev/");
 
   return {
     root: "src",
@@ -55,6 +59,7 @@ export default defineConfig(async ({ mode }) => {
       "process.versions": "undefined",
       "process.browser": JSON.stringify(true),
       __APP_VERSION__: JSON.stringify(pkg.version),
+      __APP_MODE__: JSON.stringify(appMode),
     },
 
     css: {
