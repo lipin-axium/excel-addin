@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExcelOS — UI Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    /* ───────────────────────────────────────────────────────────
+       CSS CUSTOM PROPERTIES — LIGHT MODE (default)
+    ─────────────────────────────────────────────────────────── */
+    :root {
+      --font-sans: "JetBrains Mono", "SF Mono", "Monaco", monospace;
+      --font-mono: "Share Tech Mono", "JetBrains Mono", "SF Mono", monospace;
+
+      --bg:             #ffffff;
+      --bg-secondary:   #f9fafb;
+      --bg-tertiary:    #f3f4f6;
+      --border:         #e5e7eb;
+      --border-active:  #d1d5db;
+
+      --text-primary:   #111827;
+      --text-secondary: #6b7280;
+      --text-muted:     #9ca3af;
+
+      --accent:         #6366f1;
+      --accent-light:   #eef2ff;
+      --accent-hover:   #4f46e5;
+      --accent-text:    #4338ca;
+
+      --user-bg:        #eef2ff;
+      --user-text:      #312e81;
+      --assistant-bg:   #ffffff;
+
+      --input-bg:       #ffffff;
+
+      --success:        #22c55e;
+      --error:          #ef4444;
+      --warning:        #f59e0b;
+
+      --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+
+      --radius:     2px;
+      --radius-sm:  2px;
+      --radius-xs:  2px;
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       DARK MODE
+    ─────────────────────────────────────────────────────────── */
+    [data-theme="dark"] {
+      --bg:             #0f1117;
+      --bg-secondary:   #1a1d27;
+      --bg-tertiary:    #252836;
+      --border:         #2d3148;
+      --border-active:  #3d4268;
+
+      --text-primary:   #f1f3f9;
+      --text-secondary: #8b92b3;
+      --text-muted:     #555e7b;
+
+      --accent:         #818cf8;
+      --accent-light:   rgba(99, 102, 241, 0.12);
+      --accent-hover:   #a5b4fc;
+      --accent-text:    #a5b4fc;
+
+      --user-bg:        rgba(99, 102, 241, 0.15);
+      --user-text:      #c7d2fe;
+      --assistant-bg:   #1a1d27;
+
+      --input-bg:       #1a1d27;
+
+      --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       RESET & BASE
+    ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-size: 14px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    [data-theme="dark"] body {
+      background: #060810;
+      background-image: radial-gradient(rgba(99, 102, 241, 0.07) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    button {
+      font-family: var(--font-sans);
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    input, textarea {
+      font-family: var(--font-sans);
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       TASKPANE SHELL
+    ─────────────────────────────────────────────────────────── */
+    .taskpane {
+      width: 380px;
+      height: 680px;
+      background: var(--bg);
+      border-radius: 2px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 4px 20px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    [data-theme="dark"] .taskpane {
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 60px rgba(99, 102, 241, 0.06), 0 0 120px rgba(99, 102, 241, 0.03);
+      border-color: rgba(99, 102, 241, 0.15);
+    }
+
+    /* MCP status indicator */
+    .mcp-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 10px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--success);
+      letter-spacing: 0.03em;
+    }
+
+    .mcp-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+      animation: mcp-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes mcp-pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    /* Streaming cursor */
+    .streaming-cursor {
+      display: inline-block;
+      animation: cursor-blink 1s step-end infinite;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    @keyframes cursor-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Version badge */
+    .version-badge {
+      font-size: 9px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       HEADER
+    ─────────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 52px;
+      border-bottom: none;
+      background: var(--bg);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .header::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent) 30%, #8b5cf6 70%, transparent);
+      opacity: 0.4;
+    }
+
+    [data-theme="light"] .header::after {
+      opacity: 0.3;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg {
+      width: 14px;
+      height: 14px;
+      fill: white;
+    }
+
+    .brand-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .icon-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       TAB BAR
+    ─────────────────────────────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      align-items: stretch;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      gap: 0;
+      position: relative;
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-btn svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Session dropdown trigger */
+    .session-trigger {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: -1px;
+      transition: color 0.15s;
+      position: relative;
+    }
+
+    .session-trigger:hover {
+      color: var(--accent-hover);
+    }
+
+    .session-name {
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chevron {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.15s;
+    }
+
+    .chevron.open {
+      transform: rotate(180deg);
+    }
+
+    /* Session dropdown */
+    .session-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      width: 220px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
+      z-index: 100;
+      overflow: hidden;
+      display: none;
+    }
+
+    .session-dropdown.open {
+      display: block;
+    }
+
+    .session-new-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .session-new-btn:hover {
+      background: var(--accent-light);
+    }
+
+    .session-new-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .session-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 9px 14px;
+      font-size: 12.5px;
+      color: var(--text-primary);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .session-item:hover {
+      background: var(--bg-secondary);
+    }
+
+    .session-item.current {
+      background: var(--bg-secondary);
+    }
+
+    .session-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .session-check {
+      width: 12px;
+      height: 12px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .session-dot {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    .session-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .session-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       CONTENT PANELS
+    ─────────────────────────────────────────────────────────── */
+    .panel {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      background: var(--bg-secondary);
+    }
+
+    .panel.active {
+      display: flex;
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       MESSAGE LIST
+    ─────────────────────────────────────────────────────────── */
+    .message-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    .message-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .message-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .message-list::-webkit-scrollbar-thumb {
+      background: var(--border-active);
+      border-radius: 4px;
+    }
+
+    /* User message */
+    .msg-user {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .msg-user-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    .msg-user-bubble {
+      background: var(--user-bg);
+      color: var(--user-text);
+      padding: 10px 14px;
+      border-radius: var(--radius) var(--radius-xs) var(--radius) var(--radius);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      line-height: 1.55;
+      max-width: 88%;
+      word-break: break-word;
+      box-shadow: var(--shadow-xs);
+    }
+
+    /* Assistant message */
+    .msg-assistant {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .msg-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .msg-avatar svg {
+      width: 13px;
+      height: 13px;
+      fill: white;
+    }
+
+    .msg-assistant-body {
+      background: var(--assistant-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs) var(--radius) var(--radius) var(--radius);
+      padding: 11px 14px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      max-width: calc(100% - 36px);
+      word-break: break-word;
+      box-shadow: var(--shadow-sm);
+      font-family: var(--font-mono);
+    }
+
+    .msg-assistant-body p + p {
+      margin-top: 8px;
+    }
+
+    .msg-assistant-body strong {
+      font-weight: 600;
+    }
+
+    .msg-assistant-body ul, .msg-assistant-body ol {
+      padding-left: 18px;
+      margin: 6px 0;
+    }
+
+    .msg-assistant-body li {
+      margin: 3px 0;
+    }
+
+    .msg-assistant-body code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: var(--accent-text);
+    }
+
+    .msg-assistant-body pre {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 10px 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-primary);
+    }
+
+    .msg-assistant-body pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Tool call block (matches real add-in ToolCallBlock) */
+    .tool-call-block {
+      margin: 8px 0;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-xs);
+      overflow: hidden;
+      font-family: var(--font-mono);
+      border-left: 2px solid var(--success);
+    }
+
+    .tool-call-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .tool-call-header:hover {
+      background: var(--bg-secondary);
+    }
+
+    .tool-call-name {
+      font-weight: 600;
+      flex: 1;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tool-call-badge {
+      font-size: 9px;
+      color: var(--warning);
+      white-space: nowrap;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .tool-call-status {
+      flex-shrink: 0;
+    }
+
+    .tool-status-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .tool-status-dot.done {
+      background: var(--success);
+    }
+
+    .tool-status-dot.error {
+      background: var(--error);
+    }
+
+    .tool-status-dot.running {
+      background: var(--accent);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .tool-call-detail {
+      border-top: 1px solid var(--border);
+    }
+
+    .tool-call-section {
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tool-call-section:last-child {
+      border-bottom: none;
+    }
+
+    .tool-call-section-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    .tool-call-pre {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--text-primary);
+      background: none;
+      border: none;
+      margin: 0;
+      padding: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    /* Thinking block */
+    .thinking-block {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .thinking-dot {
+      display: flex;
+      gap: 3px;
+    }
+
+    .thinking-dot span {
+      width: 5px;
+      height: 5px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .thinking-dot span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dot span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Date divider */
+    .date-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .date-divider::before, .date-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       INPUT AREA
+    ─────────────────────────────────────────────────────────── */
+    .input-area {
+      padding: 10px 14px 8px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .input-card {
+      background: var(--input-bg);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      overflow: hidden;
+    }
+
+    .input-card:focus-within {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-sm), 0 0 0 3px var(--accent-light);
+    }
+
+    .input-textarea {
+      width: 100%;
+      resize: none;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      line-height: 1.5;
+      padding: 10px 14px 6px;
+      min-height: 42px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .input-textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 10px 8px;
+    }
+
+    .input-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .input-icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .input-icon-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .input-icon-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .send-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-xs);
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .send-btn:active {
+      transform: scale(0.93);
+    }
+
+    .send-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Chip row */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 14px 6px;
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    .chip svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Selection indicator */
+    .selection-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 14px 6px;
+      font-size: 11.5px;
+      color: var(--accent-text);
+    }
+
+    .selection-indicator svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       STATS BAR
+    ─────────────────────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .stats-left { display: flex; gap: 10px; }
+    .stats-right { display: flex; gap: 6px; align-items: center; }
+
+    .stats-provider {
+      color: var(--text-secondary);
+    }
+
+    .stats-model {
+      color: var(--text-muted);
+    }
+
+    .stats-thinking {
+      color: var(--accent);
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       FORMULA PANEL
+    ─────────────────────────────────────────────────────────── */
+    .formula-panel {
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .formula-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .formula-title svg {
+      width: 15px;
+      height: 15px;
+      color: var(--accent);
+    }
+
+    .formula-cell-info {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .formula-cell-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .formula-cell-address {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--accent-text);
+      font-weight: 600;
+    }
+
+    .formula-input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .formula-input-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .formula-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius-xs);
+      padding: 9px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .formula-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .formula-explain-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+      background: var(--accent);
+      color: white;
+      border-radius: var(--radius-xs);
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .formula-explain-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .formula-explain-btn:active {
+      transform: scale(0.98);
+    }
+
+    .formula-explain-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .formula-result {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .formula-result-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .formula-result-text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       SETTINGS PANEL
+    ─────────────────────────────────────────────────────────── */
+    .settings-panel {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .settings-section {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .settings-section-header {
+      padding: 10px 14px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+
+    .settings-row-label {
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .settings-row-desc {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .settings-select {
+      appearance: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius-xs);
+      padding: 5px 28px 5px 10px;
+      font-size: 12.5px;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      cursor: pointer;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      min-width: 120px;
+    }
+
+    /* Toggle */
+    .toggle {
+      width: 36px;
+      height: 20px;
+      background: var(--border-active);
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toggle.on {
+      background: var(--accent);
+    }
+
+    .toggle::after {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .toggle.on::after {
+      transform: translateX(16px);
+    }
+
+    .api-key-input {
+      width: 100%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius-xs);
+      padding: 7px 10px;
+      font-size: 12.5px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .api-key-input:focus {
+      border-color: var(--accent);
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       EMPTY STATE
+    ─────────────────────────────────────────────────────────── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 12px;
+      padding: 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-tertiary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-icon svg {
+      width: 22px;
+      height: 22px;
+      color: var(--text-muted);
+    }
+
+    .empty-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .empty-desc {
+      font-size: 12.5px;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 240px;
+    }
+
+    /* Suggestion chips */
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .suggestion-chip {
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border-active);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .suggestion-chip:hover {
+      background: var(--accent-light);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       TYPING INDICATOR
+    ─────────────────────────────────────────────────────────── */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .typing-bubbles {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 14px;
+      background: var(--assistant-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs) var(--radius) var(--radius) var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .typing-bubbles span {
+      width: 7px;
+      height: 7px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: typing-bounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-bubbles span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-bubbles span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes typing-bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       PAGE CONTROLS (outside taskpane, for preview only)
+    ─────────────────────────────────────────────────────────── */
+    .page-controls {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 999;
+    }
+
+    .page-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      background: white;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: background 0.15s;
+    }
+
+    .page-btn:hover {
+      background: #f3f4f6;
+    }
+
+    [data-theme="dark"] .page-btn {
+      background: #1a1d27;
+      border-color: #2d3148;
+      color: #f1f3f9;
+    }
+
+    [data-theme="dark"] .page-btn:hover {
+      background: #252836;
+    }
+
+    .preview-label {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      font-family: var(--font-sans);
+      color: #9ca3af;
+      background: white;
+      border: 1px solid #e5e7eb;
+      padding: 4px 12px;
+      border-radius: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    [data-theme="dark"] .preview-label {
+      background: #1a1d27;
+      border-color: #2d3148;
+      color: #555e7b;
+    }
+
+    /* ───────────────────────────────────────────────────────────
+       MISC UTILITIES
+    ─────────────────────────────────────────────────────────── */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+    }
+
+    .spacer { flex: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Page-level controls (for preview only) ─── -->
+  <div class="page-controls">
+    <button class="page-btn" id="themeToggleOuter" onclick="toggleTheme()">Toggle Dark Mode</button>
+  </div>
+  <div class="preview-label">UI Preview — not the live add-in</div>
+
+  <!-- ─── Taskpane Shell ─── -->
+  <div class="taskpane" id="taskpane">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <!-- Spreadsheet icon -->
+          <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="white" stroke-width="1.5"/>
+            <line x1="2" y1="7" x2="18" y2="7" stroke="white" stroke-width="1.2"/>
+            <line x1="2" y1="12" x2="18" y2="12" stroke="white" stroke-width="1.2"/>
+            <line x1="8" y1="7" x2="8" y2="18" stroke="white" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <span class="brand-name">ExcelOS</span>
+        <span class="version-badge">v0.1</span>
+      </div>
+
+      <div class="header-actions">
+        <!-- MCP status -->
+        <div class="mcp-status">
+          <span class="mcp-dot"></span>
+          <span>MCP</span>
+        </div>
+        <!-- Follow mode -->
+        <button class="icon-btn" title="Auto-scroll" id="followBtn" onclick="toggleFollow()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.641 0-8.573-3.007-9.963-7.178z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+
+        <!-- Theme toggle -->
+        <button class="icon-btn" title="Toggle theme" onclick="toggleTheme()">
+          <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+          </svg>
+        </button>
+
+        <!-- Clear -->
+        <button class="icon-btn" title="Clear messages" onclick="clearMessages()" id="clearBtn" style="display:none;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- TAB BAR -->
+    <nav class="tab-bar" id="tabBar">
+
+      <!-- Session dropdown (replaces chat tab when chat is active) -->
+      <div id="sessionTriggerWrap" style="position:relative;">
+        <button class="session-trigger" id="sessionTrigger" onclick="toggleSessionDropdown()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+          </svg>
+          <span class="session-name" id="sessionName">New Chat</span>
+          <svg class="chevron" id="sessionChevron" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </button>
+
+        <!-- Dropdown -->
+        <div class="session-dropdown" id="sessionDropdown">
+          <button class="session-new-btn" onclick="newSession()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            New Chat
+          </button>
+          <div id="sessionList"></div>
+        </div>
+      </div>
+
+      <!-- Chat tab (shown when another tab is active) -->
+      <button class="tab-btn" id="tabChat" onclick="switchTab('chat')" style="display:none;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+        </svg>
+        Chat
+      </button>
+
+      <button class="tab-btn" id="tabFormula" onclick="switchTab('formula')">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.745 3A23.933 23.933 0 003 12c0 3.183.62 6.22 1.745 9M19.5 3c.967 2.759 1.5 5.8 1.5 9s-.533 6.241-1.5 9M8.25 8.885l1.444-.89a.75.75 0 011.105.402l2.402 7.206a.75.75 0 001.104.401l1.445-.889m-8.25.75l.213.09a1.687 1.687 0 002.062-.617l4.45-6.676a1.688 1.688 0 012.062-.618l.213.09"/>
+        </svg>
+        Formula
+      </button>
+
+      <button class="tab-btn" id="tabSettings" onclick="switchTab('settings')">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Settings
+      </button>
+    </nav>
+
+    <!-- ─── CHAT PANEL ─── -->
+    <div class="panel active" id="panelChat">
+
+      <!-- Message list -->
+      <div class="message-list" id="messageList">
+
+        <div class="date-divider">Today</div>
+
+        <!-- User message 1 -->
+        <div class="msg-user">
+          <span class="msg-user-label">You</span>
+          <div class="msg-user-bubble">
+            Clean up the revenue data in column D — remove any non-numeric values and fill blanks with the row average
+          </div>
+        </div>
+
+        <!-- Assistant message 1 (with thinking + tool calls) -->
+        <div class="msg-assistant">
+          <div class="msg-avatar">
+            <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="white" stroke-width="1.5"/>
+              <line x1="2" y1="7" x2="18" y2="7" stroke="white" stroke-width="1.2"/>
+              <line x1="8" y1="7" x2="8" y2="18" stroke="white" stroke-width="1.2"/>
+            </svg>
+          </div>
+          <div class="msg-assistant-body">
+            <!-- Thinking block -->
+            <div class="thinking-block" style="margin-bottom: 10px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.4 2 6 5 7v3h6v-3c3-1 5-3.6 5-7a8 8 0 0 0-8-8z"/><line x1="10" y1="22" x2="14" y2="22"/></svg>
+              <span>Thinking…</span>
+            </div>
+
+            <p>I'll first read the selected range to understand the data layout, then clean column D.</p>
+
+            <!-- Tool call 1: read_selected_range -->
+            <div class="tool-call-block">
+              <div class="tool-call-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                <span class="tool-call-name">read_selected_range</span>
+                <span class="tool-call-status"><span class="tool-status-dot done"></span></span>
+              </div>
+              <div class="tool-call-detail">
+                <div class="tool-call-section">
+                  <div class="tool-call-section-label">ARGS</div>
+                  <pre class="tool-call-pre">{ "range": "A1:F24", "sheet": "Revenue" }</pre>
+                </div>
+                <div class="tool-call-section">
+                  <div class="tool-call-section-label">RESULT</div>
+                  <pre class="tool-call-pre">24 rows × 6 columns read successfully</pre>
+                </div>
+              </div>
+            </div>
+
+            <p>Found 4 non-numeric values ("N/A", "—", "", "pending") and 3 blank cells in D2:D24. Replacing with row averages from columns B, C, E.</p>
+
+            <!-- Tool call 2: batch_update_cells -->
+            <div class="tool-call-block">
+              <div class="tool-call-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                <span class="tool-call-name">batch_update_cells</span>
+                <span class="tool-call-badge">✎ D5, D8, D11, D14, D17, D20, D22</span>
+                <span class="tool-call-status"><span class="tool-status-dot done"></span></span>
+              </div>
+              <div class="tool-call-detail" style="display:none;">
+                <div class="tool-call-section">
+                  <div class="tool-call-section-label">ARGS</div>
+                  <pre class="tool-call-pre">{ "updates": [{"cell":"D5","value":1842.50}, ...] }</pre>
+                </div>
+              </div>
+            </div>
+
+            <p><strong>Done.</strong> Cleaned 7 cells in column D. All values are now numeric. Here's a summary:</p>
+            <pre><code>D5:  "N/A"    → 1,842.50  (avg of B5, C5, E5)
+D8:  ""       → 2,105.00
+D11: "—"      → 967.33
+D14: ""       → 3,210.75
+D17: "pending"→ 1,556.00
+D20: ""       → 2,890.25
+D22: "N/A"    → 1,423.80</code></pre>
+          </div>
+        </div>
+
+        <!-- User message 2 -->
+        <div class="msg-user">
+          <span class="msg-user-label">You</span>
+          <div class="msg-user-bubble">
+            Now add a SUM formula at the bottom of column D
+          </div>
+        </div>
+
+        <!-- Assistant message 2 (quick tool call) -->
+        <div class="msg-assistant">
+          <div class="msg-avatar">
+            <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="white" stroke-width="1.5"/>
+              <line x1="2" y1="7" x2="18" y2="7" stroke="white" stroke-width="1.2"/>
+              <line x1="8" y1="7" x2="8" y2="18" stroke="white" stroke-width="1.2"/>
+            </svg>
+          </div>
+          <div class="msg-assistant-body">
+            <!-- Tool call 3: update_cell -->
+            <div class="tool-call-block">
+              <div class="tool-call-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                <span class="tool-call-name">update_cell</span>
+                <span class="tool-call-badge">✎ D25</span>
+                <span class="tool-call-status"><span class="tool-status-dot done"></span></span>
+              </div>
+            </div>
+
+            <p>Added <code>=SUM(D2:D24)</code> to <strong>D25</strong>. Total revenue: <strong>$47,892.13</strong><span class="streaming-cursor">▊</span></p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input area -->
+      <div class="input-area">
+        <!-- Attachment chips (demo) -->
+        <div class="chip-row" id="chipRow" style="display:none;">
+          <div class="chip">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            data.xlsx
+            <button onclick="removeChip()" style="color:var(--text-muted); margin-left:2px;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:11px;height:11px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Selection indicator -->
+        <div class="selection-indicator" id="selectionIndicator" style="display:flex;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c-.621 0-1.125.504-1.125 1.125v1.5m2.25-2.625h.375a1.125 1.125 0 011.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-.375m-2.625 0H9.75m0 0H8.625m1.125 0v3.375c0 .621.504 1.125 1.125 1.125m-2.25 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125"/></svg>
+          A1:D24 selected
+        </div>
+
+        <div class="input-card">
+          <textarea
+            class="input-textarea"
+            id="chatInput"
+            placeholder="Ask anything about your spreadsheet…"
+            rows="1"
+            onkeydown="handleInputKey(event)"
+            oninput="autoResize(this)"
+          ></textarea>
+          <div class="input-toolbar">
+            <div class="input-actions">
+              <!-- Attach -->
+              <button class="input-icon-btn" title="Attach file" onclick="toggleAttach()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"/>
+                </svg>
+              </button>
+              <!-- Use selection -->
+              <button class="input-icon-btn" title="Use selected cells" onclick="toggleSelection()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5"/>
+                </svg>
+              </button>
+            </div>
+            <button class="send-btn" onclick="sendMessage()" title="Send (Enter)">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="stats-bar">
+        <div class="stats-left">
+          <span title="Input tokens">↑1.2M</span>
+          <span title="Output tokens">↓234k</span>
+          <span title="Total cost">$0.045</span>
+          <span title="Context usage">12.4%/200k</span>
+        </div>
+        <div class="stats-right">
+          <span class="stats-provider">anthropic</span>
+          <span class="stats-model">claude-sonnet-4-6</span>
+          <span class="stats-thinking">• thinking</span>
+        </div>
+      </div>
+    </div><!-- /panelChat -->
+
+    <!-- ─── FORMULA PANEL ─── -->
+    <div class="panel" id="panelFormula">
+      <div style="flex:1; overflow-y:auto; background: var(--bg-secondary);">
+        <div class="formula-panel">
+          <div class="formula-title">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.745 3A23.933 23.933 0 003 12c0 3.183.62 6.22 1.745 9M19.5 3c.967 2.759 1.5 5.8 1.5 9s-.533 6.241-1.5 9M8.25 8.885l1.444-.89a.75.75 0 011.105.402l2.402 7.206a.75.75 0 001.104.401l1.445-.889m-8.25.75l.213.09a1.687 1.687 0 002.062-.617l4.45-6.676a1.688 1.688 0 012.062-.618l.213.09"/>
+            </svg>
+            Formula Explainer
+          </div>
+
+          <div class="formula-cell-info">
+            <div class="formula-cell-label">Active cell</div>
+            <div class="formula-cell-address">B4 — Sheet1</div>
+          </div>
+
+          <div class="formula-input-row">
+            <label class="formula-input-label" for="formulaInput">Formula</label>
+            <input
+              class="formula-input"
+              id="formulaInput"
+              type="text"
+              value="=VLOOKUP(A2,Sheet2!$A:$C,2,FALSE)"
+              placeholder="Enter or paste a formula…"
+            />
+          </div>
+
+          <button class="formula-explain-btn" onclick="explainFormula()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+            </svg>
+            Explain Formula
+          </button>
+
+          <div class="formula-result">
+            <div class="formula-result-title">Explanation</div>
+            <div class="formula-result-text">
+              This formula looks up the value in <strong>A2</strong> within the first column of <strong>Sheet2!A:C</strong>, then returns the value from column 2 of that range. The <code>FALSE</code> argument requires an exact match. Useful for joining data across sheets by a shared ID.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /panelFormula -->
+
+    <!-- ─── SETTINGS PANEL ─── -->
+    <div class="panel" id="panelSettings">
+      <div class="settings-panel">
+
+        <div class="settings-section">
+          <div class="settings-section-header">Provider</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label">Provider</div>
+            </div>
+            <select class="settings-select">
+              <option>Anthropic</option>
+              <option>OpenAI</option>
+              <option>Gemini</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label">Model</div>
+            </div>
+            <select class="settings-select">
+              <option>claude-sonnet-4-6</option>
+              <option>claude-opus-4-6</option>
+              <option>claude-haiku-4-5</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label">API Key</div>
+              <div class="settings-row-desc">Stored locally in your browser</div>
+            </div>
+          </div>
+          <div class="settings-row" style="padding-top: 6px; padding-bottom: 12px;">
+            <input class="api-key-input" type="password" value="sk-ant-••••••••••••••••••••••••••" placeholder="sk-ant-…" />
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-header">Thinking</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label">Extended thinking</div>
+              <div class="settings-row-desc">Allow deeper reasoning on complex tasks</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label">Thinking mode</div>
+            </div>
+            <select class="settings-select">
+              <option>Auto</option>
+              <option>Always</option>
+              <option>Never</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-header">Behavior</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label">Auto-scroll</div>
+              <div class="settings-row-desc">Follow new messages as they stream</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label">System prompt</div>
+              <div class="settings-row-desc">Custom instructions for the assistant</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /panelSettings -->
+
+  </div><!-- /taskpane -->
+
+  <script>
+    // ────────────────────────────────────────────────────────
+    //  STATE
+    // ────────────────────────────────────────────────────────
+    let currentTab = 'chat';
+    let isDark = true;
+    let sessionDropdownOpen = false;
+    let followMode = true;
+    let attachShown = false;
+    let selectionShown = false;
+    let messageCount = 4; // already rendered above
+
+    const sessions = [
+      { id: '1', name: 'VLOOKUP help', msgs: 4, current: true },
+      { id: '2', name: 'Pivot table cleanup', msgs: 11, current: false },
+      { id: '3', name: 'Budget formulas', msgs: 7, current: false },
+    ];
+
+    // ────────────────────────────────────────────────────────
+    //  THEME
+    // ────────────────────────────────────────────────────────
+    function toggleTheme() {
+      isDark = !isDark;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      // Swap sun/moon icon
+      const icon = document.getElementById('themeIcon');
+      if (isDark) {
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+      } else {
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>`;
+      }
+    }
+
+    // ────────────────────────────────────────────────────────
+    //  TAB SWITCHING
+    // ────────────────────────────────────────────────────────
+    function switchTab(tab) {
+      currentTab = tab;
+      closeSessionDropdown();
+
+      // Panels
+      document.getElementById('panelChat').classList.toggle('active', tab === 'chat');
+      document.getElementById('panelFormula').classList.toggle('active', tab === 'formula');
+      document.getElementById('panelSettings').classList.toggle('active', tab === 'settings');
+
+      // Tab buttons
+      document.getElementById('tabFormula').classList.toggle('active', tab === 'formula');
+      document.getElementById('tabSettings').classList.toggle('active', tab === 'settings');
+
+      // Session trigger vs Chat tab
+      document.getElementById('sessionTriggerWrap').style.display = tab === 'chat' ? '' : 'none';
+      document.getElementById('tabChat').style.display = tab === 'chat' ? 'none' : '';
+      document.getElementById('tabChat').classList.toggle('active', false);
+
+      // Clear button only on chat
+      document.getElementById('clearBtn').style.display =
+        (tab === 'chat' && messageCount > 0) ? '' : 'none';
+
+      // Follow button only on chat
+      document.getElementById('followBtn').style.display = tab === 'chat' ? '' : 'none';
+    }
+
+    // ────────────────────────────────────────────────────────
+    //  SESSION DROPDOWN
+    // ────────────────────────────────────────────────────────
+    function renderSessionList() {
+      const list = document.getElementById('sessionList');
+      list.innerHTML = sessions.map(s => `
+        <button class="session-item ${s.current ? 'current' : ''}" onclick="selectSession('${s.id}')">
+          <div class="session-item-left">
+            ${s.current
+              ? `<svg class="session-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`
+              : `<div class="session-dot"></div>`}
+            <span class="session-label">${s.name}</span>
+          </div>
+          <span class="session-count">${s.msgs}</span>
+        </button>
+      `).join('');
+    }
+
+    function toggleSessionDropdown() {
+      sessionDropdownOpen = !sessionDropdownOpen;
+      document.getElementById('sessionDropdown').classList.toggle('open', sessionDropdownOpen);
+      document.getElementById('sessionChevron').classList.toggle('open', sessionDropdownOpen);
+    }
+
+    function closeSessionDropdown() {
+      sessionDropdownOpen = false;
+      document.getElementById('sessionDropdown').classList.remove('open');
+      document.getElementById('sessionChevron').classList.remove('open');
+    }
+
+    function selectSession(id) {
+      sessions.forEach(s => s.current = s.id === id);
+      const current = sessions.find(s => s.id === id);
+      if (current) document.getElementById('sessionName').textContent = current.name;
+      renderSessionList();
+      closeSessionDropdown();
+    }
+
+    function newSession() {
+      const name = 'New Chat';
+      const id = String(Date.now());
+      sessions.forEach(s => s.current = false);
+      sessions.unshift({ id, name, msgs: 0, current: true });
+      document.getElementById('sessionName').textContent = name;
+      renderSessionList();
+      closeSessionDropdown();
+      clearMessages();
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+      const wrap = document.getElementById('sessionTriggerWrap');
+      if (wrap && !wrap.contains(e.target) && sessionDropdownOpen) {
+        closeSessionDropdown();
+      }
+    });
+
+    // ────────────────────────────────────────────────────────
+    //  MESSAGES
+    // ────────────────────────────────────────────────────────
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const list = document.getElementById('messageList');
+
+      // User bubble
+      const userDiv = document.createElement('div');
+      userDiv.className = 'msg-user';
+      userDiv.innerHTML = `
+        <span class="msg-user-label">You</span>
+        <div class="msg-user-bubble">${escapeHtml(text)}</div>
+      `;
+      list.appendChild(userDiv);
+
+      input.value = '';
+      autoResize(input);
+      messageCount++;
+
+      // Show clear btn
+      document.getElementById('clearBtn').style.display = '';
+
+      // Scroll to bottom
+      list.scrollTop = list.scrollHeight;
+
+      // Typing indicator
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'msg-assistant typing-indicator';
+      typingDiv.id = 'typingIndicator';
+      typingDiv.innerHTML = `
+        <div class="msg-avatar">
+          <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="white" stroke-width="1.5"/>
+            <line x1="2" y1="7" x2="18" y2="7" stroke="white" stroke-width="1.2"/>
+            <line x1="8" y1="7" x2="8" y2="18" stroke="white" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div class="typing-bubbles">
+          <span></span><span></span><span></span>
+        </div>
+      `;
+      list.appendChild(typingDiv);
+      list.scrollTop = list.scrollHeight;
+
+      // Simulate response
+      setTimeout(() => {
+        const typing = document.getElementById('typingIndicator');
+        if (typing) typing.remove();
+
+        const responseDiv = document.createElement('div');
+        responseDiv.className = 'msg-assistant';
+        responseDiv.innerHTML = `
+          <div class="msg-avatar">
+            <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="white" stroke-width="1.5"/>
+              <line x1="2" y1="7" x2="18" y2="7" stroke="white" stroke-width="1.2"/>
+              <line x1="8" y1="7" x2="8" y2="18" stroke="white" stroke-width="1.2"/>
+            </svg>
+          </div>
+          <div class="msg-assistant-body">
+            Got it! I've processed your request. Here's what I found based on your spreadsheet context. Is there anything else you'd like me to refine?
+          </div>
+        `;
+        list.appendChild(responseDiv);
+        list.scrollTop = list.scrollHeight;
+        messageCount++;
+      }, 1400);
+    }
+
+    function clearMessages() {
+      const list = document.getElementById('messageList');
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+            </svg>
+          </div>
+          <div class="empty-title">Start a conversation</div>
+          <div class="empty-desc">Ask anything about your spreadsheet — formulas, data analysis, automation, and more.</div>
+          <div class="suggestions">
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">Explain this formula</button>
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">Clean up my data</button>
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">Create a pivot table</button>
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">Find duplicates</button>
+          </div>
+        </div>
+      `;
+      messageCount = 0;
+      document.getElementById('clearBtn').style.display = 'none';
+    }
+
+    function fillSuggestion(btn) {
+      const input = document.getElementById('chatInput');
+      input.value = btn.textContent;
+      input.focus();
+      autoResize(input);
+    }
+
+    function handleInputKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ────────────────────────────────────────────────────────
+    //  UI TOGGLES
+    // ────────────────────────────────────────────────────────
+    function toggleFollow() {
+      followMode = !followMode;
+      const btn = document.getElementById('followBtn');
+      btn.style.color = followMode ? 'var(--accent)' : 'var(--text-secondary)';
+    }
+
+    function toggleAttach() {
+      attachShown = !attachShown;
+      document.getElementById('chipRow').style.display = attachShown ? 'flex' : 'none';
+    }
+
+    function removeChip() {
+      attachShown = false;
+      document.getElementById('chipRow').style.display = 'none';
+    }
+
+    function toggleSelection() {
+      selectionShown = !selectionShown;
+      document.getElementById('selectionIndicator').style.display = selectionShown ? 'flex' : 'none';
+    }
+
+    function explainFormula() {
+      // already showing result — just a demo
+    }
+
+    // ────────────────────────────────────────────────────────
+    //  INIT
+    // ────────────────────────────────────────────────────────
+    renderSessionList();
+    // Init dark mode
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeIcon').innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+    // Init follow button color
+    document.getElementById('followBtn').style.color = 'var(--accent)';
+  </script>
+
+</body>
+</html>
