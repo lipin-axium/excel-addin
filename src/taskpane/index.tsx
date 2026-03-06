@@ -8,8 +8,8 @@ const title = "ExcelOS";
 const rootElement: HTMLElement | null = document.getElementById("container");
 const root = rootElement ? createRoot(rootElement) : undefined;
 
-Office.onReady(() => {
-  initAnalytics();
+Office.onReady(async () => {
+  await initAnalytics();
   trackEvent("addin_opened");
   root?.render(<App title={title} />);
 });

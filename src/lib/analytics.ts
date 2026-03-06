@@ -3,12 +3,24 @@ const ANALYTICS_URL = import.meta.env.VITE_ANALYTICS_URL ?? "";
 let _user = "anonymous";
 let _email = "";
 
-export function initAnalytics() {
+export async function initAnalytics() {
   try {
-    const ctx = Office.context as any;
-    _user = ctx.displayName ?? "anonymous";
-    _email = ctx.userProfile?.emailAddress ?? "";
-  } catch {}
+    // Try Office SSO first — returns a JWT with real name + email
+    const token = await Office.auth.getAccessToken({
+      allowSignInPrompt: false,
+      allowConsentPrompt: false,
+    });
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    _user = payload.name ?? "anonymous";
+    _email = payload.preferred_username ?? payload.email ?? "";
+  } catch {
+    // SSO unavailable (sideloaded, no consent, etc.) — best-effort fallback
+    try {
+      const ctx = Office.context as any;
+      _user = ctx.displayName ?? "anonymous";
+      _email = ctx.userProfile?.emailAddress ?? "";
+    } catch {}
+  }
 }
 
 export function trackEvent(event: string, data?: Record<string, string>) {
