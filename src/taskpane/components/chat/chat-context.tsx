@@ -21,6 +21,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { getOfficeSsoToken } from "../../../lib/analytics";
 import type { DirtyRange } from "../../../lib/dirty-tracker";
 import {
   getSelectedRangeData,
@@ -44,7 +45,11 @@ import {
 } from "../../../lib/oauth";
 import {
   applyProxyToModel,
+  BEDROCK_PROXY_URL,
   buildCustomModel,
+  buildExcelosModel,
+  EXCELOS_AI_MODEL_ID,
+  EXCELOS_AI_PROVIDER,
   loadSavedConfig,
   type ProviderConfig,
   saveConfig,
@@ -536,7 +541,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     (config: ProviderConfig) => {
       let contextWindow = 0;
       let baseModel: Model<any>;
-      if (config.provider === "custom") {
+      if (config.provider === EXCELOS_AI_PROVIDER) {
+        const excelos = buildExcelosModel();
+        if (!excelos) return;
+        baseModel = excelos;
+      } else if (config.provider === "custom") {
         const custom = buildCustomModel(config);
         if (!custom) return;
         baseModel = custom;
@@ -579,7 +588,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         },
         streamFn: async (model, context, options) => {
           const cfg = configRef.current ?? config;
-          const apiKey = await getActiveApiKey(cfg);
+          let apiKey: string;
+          if (cfg.provider === EXCELOS_AI_PROVIDER) {
+            const token = await getOfficeSsoToken();
+            if (!token) throw new Error("ExcelOS AI requires Office sign-in");
+            apiKey = token;
+          } else {
+            apiKey = await getActiveApiKey(cfg);
+          }
           return streamSimple(model, context, {
             ...options,
             apiKey,
@@ -648,14 +664,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     ) => {
       const cfg = configRef.current ?? state.providerConfig;
       if (!cfg) throw new Error("No provider configured");
-      const apiKey = await getActiveApiKey(cfg);
+      let apiKey: string;
       let baseModel: Model<any>;
-      if (cfg.provider === "custom") {
+      if (cfg.provider === EXCELOS_AI_PROVIDER) {
+        const excelos = buildExcelosModel();
+        if (!excelos) throw new Error("ExcelOS AI not configured");
+        baseModel = excelos;
+        const token = await getOfficeSsoToken();
+        if (!token) throw new Error("ExcelOS AI requires Office sign-in");
+        apiKey = token;
+      } else if (cfg.provider === "custom") {
         const custom = buildCustomModel(cfg);
         if (!custom) throw new Error("Invalid custom model config");
         baseModel = custom;
+        apiKey = await getActiveApiKey(cfg);
       } else {
         baseModel = getModel(cfg.provider as any, cfg.model as any);
+        apiKey = await getActiveApiKey(cfg);
       }
       const model = applyProxyToModel(baseModel, cfg);
       const stream = streamSimple(
@@ -1039,7 +1064,30 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
         // Now apply provider config — agent gets the correct system prompt with skills
         const saved = loadSavedConfig();
-        if (saved?.provider && saved?.apiKey && saved?.model) {
+        const isExcelosAi = saved?.provider === EXCELOS_AI_PROVIDER;
+        const isManagedBedrock =
+          __APP_MODE__ === "managed" && !!BEDROCK_PROXY_URL;
+        if (isManagedBedrock) {
+          // Managed mode with Bedrock configured: always use ExcelOS AI
+          const excelosConfig: ProviderConfig = {
+            provider: EXCELOS_AI_PROVIDER,
+            apiKey: "",
+            model: EXCELOS_AI_MODEL_ID,
+            useProxy: false,
+            proxyUrl: "",
+            thinking: "none",
+            followMode: true,
+            apiType: "anthropic-messages",
+            customBaseUrl: BEDROCK_PROXY_URL,
+            authMethod: "apikey",
+          };
+          saveConfig(excelosConfig);
+          applyConfig(excelosConfig);
+        } else if (
+          saved?.provider &&
+          saved?.model &&
+          (isExcelosAi || saved?.apiKey)
+        ) {
           applyConfig(saved);
         }
 

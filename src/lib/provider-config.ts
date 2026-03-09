@@ -3,6 +3,27 @@ import { loadOAuthCredentials } from "./oauth";
 
 export type ThinkingLevel = "none" | "low" | "medium" | "high";
 
+export const EXCELOS_AI_PROVIDER = "excelos-ai";
+export const EXCELOS_AI_MODEL_ID = "claude-sonnet-4-6";
+export const BEDROCK_PROXY_URL: string =
+  import.meta.env.VITE_BEDROCK_PROXY_URL ?? "";
+
+export function buildExcelosModel(): Model<any> | null {
+  if (!BEDROCK_PROXY_URL) return null;
+  return {
+    id: EXCELOS_AI_MODEL_ID,
+    name: "Claude Sonnet 4.6 (ExcelOS AI)",
+    api: "anthropic-messages" as Api,
+    provider: EXCELOS_AI_PROVIDER as any,
+    baseUrl: BEDROCK_PROXY_URL,
+    reasoning: true,
+    input: ["text", "image"] as ("text" | "image")[],
+    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    contextWindow: 200000,
+    maxTokens: 64000,
+  };
+}
+
 export interface ProviderConfig {
   provider: string;
   apiKey: string;
@@ -70,7 +91,10 @@ export function loadSavedConfig(): ProviderConfig | null {
       if (config.apiType === undefined) config.apiType = "";
       if (config.customBaseUrl === undefined) config.customBaseUrl = "";
       if (config.authMethod === undefined) config.authMethod = "apikey";
-      if (config.authMethod === "oauth") {
+      if (config.provider === EXCELOS_AI_PROVIDER) {
+        // SSO token is fetched fresh at call time — never store it
+        config.apiKey = "";
+      } else if (config.authMethod === "oauth") {
         const creds = loadOAuthCredentials(config.provider);
         if (creds) config.apiKey = creds.access;
       }

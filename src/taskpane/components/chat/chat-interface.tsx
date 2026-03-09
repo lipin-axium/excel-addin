@@ -22,7 +22,7 @@ import {
   useState,
 } from "react";
 import { trackEvent } from "../../../lib/analytics";
-import { saveConfig } from "../../../lib/provider-config";
+import { BEDROCK_PROXY_URL, saveConfig } from "../../../lib/provider-config";
 import { getSessionMessageCount } from "../../../lib/storage";
 import { ChatProvider, useChat } from "./chat-context";
 import { ChatInput } from "./chat-input";
@@ -580,8 +580,14 @@ function ChatContent() {
   const [activeTab, setActiveTab] = useState<ChatTab>("chat");
   const { theme, toggle } = useTheme();
   const { processFiles } = useChat();
+  // Managed mode is "ready" (skips onboarding) when:
+  //   1. Not in managed mode, OR
+  //   2. User has previously completed onboarding, OR
+  //   3. Bedrock proxy is configured (ExcelOS AI auto-handles auth)
   const [managedReady, setManagedReady] = useState(
-    !IS_MANAGED || !!localStorage.getItem(MANAGED_API_KEY),
+    !IS_MANAGED ||
+      !!localStorage.getItem(MANAGED_API_KEY) ||
+      !!BEDROCK_PROXY_URL,
   );
   const [isDragOver, setIsDragOver] = useState(false);
   const dragCounterRef = useRef(0);

@@ -3,13 +3,22 @@ const ANALYTICS_URL = import.meta.env.VITE_ANALYTICS_URL ?? "";
 let _user = "anonymous";
 let _email = "";
 
-export async function initAnalytics() {
+export async function getOfficeSsoToken(): Promise<string | null> {
   try {
-    // Try Office SSO first — returns a JWT with real name + email
-    const token = await Office.auth.getAccessToken({
+    return await Office.auth.getAccessToken({
       allowSignInPrompt: false,
       allowConsentPrompt: false,
     });
+  } catch {
+    return null;
+  }
+}
+
+export async function initAnalytics() {
+  try {
+    // Try Office SSO first — returns a JWT with real name + email
+    const token = await getOfficeSsoToken();
+    if (!token) throw new Error("SSO unavailable");
     const payload = JSON.parse(atob(token.split(".")[1]));
     _user = payload.name ?? "anonymous";
     _email = payload.preferred_username ?? payload.email ?? "";

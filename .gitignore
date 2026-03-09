@@ -34,3 +34,4 @@ infra/terraform.tfstate.backup
 infra/*.tfvars
 !infra/*.tfvars.example
 infra/lambda.zip
+infra/lambda-bedrock.zip

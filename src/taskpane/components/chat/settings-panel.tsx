@@ -37,6 +37,9 @@ import {
 } from "../../../lib/oauth";
 import {
   API_TYPES,
+  BEDROCK_PROXY_URL,
+  EXCELOS_AI_MODEL_ID,
+  EXCELOS_AI_PROVIDER,
   loadSavedConfig,
   saveConfig,
   THINKING_LEVELS,
@@ -349,6 +352,7 @@ export function SettingsPanel() {
 
   const followMode = state.providerConfig?.followMode ?? true;
   const isCustom = provider === "custom";
+  const isExcelosAi = provider === EXCELOS_AI_PROVIDER;
 
   const updateAndSync = useCallback(
     (
@@ -385,7 +389,12 @@ export function SettingsPanel() {
       if ("authMethod" in updates) setAuthMethod(am);
 
       const isCustomEndpoint = p === "custom";
-      const isValid = isCustomEndpoint ? p && at && cb && m && k : p && k && m;
+      const isExcelosAiProvider = p === EXCELOS_AI_PROVIDER;
+      const isValid = isExcelosAiProvider
+        ? !!(p && m)
+        : isCustomEndpoint
+          ? p && at && cb && m && k
+          : p && k && m;
 
       if (isValid) {
         saveConfig({
@@ -429,7 +438,8 @@ export function SettingsPanel() {
     ],
   );
 
-  const models = provider && !isCustom ? getModelsForProvider(provider) : [];
+  const models =
+    provider && !isCustom && !isExcelosAi ? getModelsForProvider(provider) : [];
 
   const hasOAuth = provider in OAUTH_PROVIDERS;
   const searchProviders = listSearchProviders();
@@ -474,7 +484,17 @@ export function SettingsPanel() {
   );
 
   const handleProviderChange = (newProvider: string) => {
-    if (newProvider === "custom") {
+    if (newProvider === EXCELOS_AI_PROVIDER) {
+      updateAndSync({
+        provider: newProvider,
+        model: EXCELOS_AI_MODEL_ID,
+        apiKey: "",
+        apiType: "anthropic-messages",
+        customBaseUrl: BEDROCK_PROXY_URL,
+        authMethod: "apikey",
+      });
+      setOauthFlow({ step: "idle" });
+    } else if (newProvider === "custom") {
       updateAndSync({ provider: newProvider, model: "", authMethod: "apikey" });
     } else {
       const providerModels = newProvider
@@ -560,7 +580,7 @@ export function SettingsPanel() {
   };
 
   const isConfigured = state.providerConfig !== null;
-  const showApiKeyInput = !(hasOAuth && authMethod === "oauth");
+  const showApiKeyInput = !isExcelosAi && !(hasOAuth && authMethod === "oauth");
 
   const inputStyle = {
     borderRadius: "var(--chat-radius)",
@@ -595,6 +615,11 @@ export function SettingsPanel() {
               style={inputStyle}
             >
               <option value="">Select provider...</option>
+              {BEDROCK_PROXY_URL && (
+                <option value={EXCELOS_AI_PROVIDER}>
+                  ExcelOS AI (Company Hosted)
+                </option>
+              )}
               {availableProviders.map((p) => (
                 <option key={p} value={p}>
                   {p}
@@ -842,7 +867,20 @@ export function SettingsPanel() {
             </div>
           )}
 
-          {/* API Key input — hidden when using OAuth */}
+          {/* ExcelOS AI status badge — shown instead of API key input */}
+          {isExcelosAi && (
+            <div
+              className="flex items-center gap-2 px-3 py-2.5 text-xs bg-(--chat-input-bg) border border-(--chat-border)"
+              style={{ borderRadius: "var(--chat-radius)" }}
+            >
+              <Check size={12} className="text-(--chat-success)" />
+              <span className="text-(--chat-text-secondary)">
+                Authenticated via Office sign-in — no API key needed
+              </span>
+            </div>
+          )}
+
+          {/* API Key input — hidden when using OAuth or ExcelOS AI */}
           {showApiKeyInput && (
             <label className="block">
               <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
