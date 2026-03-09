@@ -13,7 +13,8 @@ export async function initAnalytics() {
     const payload = JSON.parse(atob(token.split(".")[1]));
     _user = payload.name ?? "anonymous";
     _email = payload.preferred_username ?? payload.email ?? "";
-  } catch {
+  } catch (err) {
+    console.warn("[ExcelOS] SSO failed:", err);
     // SSO unavailable (sideloaded, no consent, etc.) — best-effort fallback
     try {
       const ctx = Office.context as any;

@@ -8,9 +8,10 @@
   <Description DefaultValue="AI Chat for Excel - Chat with LLMs directly in Excel using your own API keys."/>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://localhost:3000"/>
+  <SupportUrl DefaultValue="https://localhost:3000/"/>
   <AppDomains>
-    <AppDomain>https://localhost:3000</AppDomain>
+    <AppDomain>https://localhost:3000/</AppDomain>
+    <AppDomain>https://e1gg7gwwbi.execute-api.ap-southeast-1.amazonaws.com</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Workbook"/>
@@ -60,15 +61,6 @@
         </DesktopFormFactor>
       </Host>
     </Hosts>
-    <WebApplicationInfo>
-      <Id>a4b0516f-52c9-4b28-95f9-255dd9dd6bfb</Id>
-      <Resource>api://a4b0516f-52c9-4b28-95f9-255dd9dd6bfb</Resource>
-      <Scopes>
-        <Scope>openid</Scope>
-        <Scope>email</Scope>
-        <Scope>profile</Scope>
-      </Scopes>
-    </WebApplicationInfo>
     <Resources>
       <bt:Images>
         <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
@@ -90,5 +82,14 @@
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open ExcelOS AI chat panel"/>
       </bt:LongStrings>
     </Resources>
+    <WebApplicationInfo>
+      <Id>a4b0516f-52c9-4b28-95f9-255dd9dd6bfb</Id>
+      <Resource>api://d10i2j79wgfo75.cloudfront.net/a4b0516f-52c9-4b28-95f9-255dd9dd6bfb</Resource>
+      <Scopes>
+        <Scope>openid</Scope>
+        <Scope>email</Scope>
+        <Scope>profile</Scope>
+      </Scopes>
+    </WebApplicationInfo>
   </VersionOverrides>
 </OfficeApp>
