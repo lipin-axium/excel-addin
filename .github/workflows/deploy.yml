@@ -35,6 +35,7 @@ jobs:
           VITE_APP_MODE: power
           VITE_PROD_URL: ${{ secrets.VITE_PROD_URL }}
           VITE_ANALYTICS_URL: ${{ secrets.VITE_ANALYTICS_URL }}
+          VITE_BEDROCK_PROXY_URL: ${{ secrets.VITE_BEDROCK_PROXY_URL }}
 
       - name: Deploy to S3 (power)
         run: aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
@@ -60,6 +61,7 @@ jobs:
           VITE_APP_MODE: managed
           VITE_MANAGED_PROD_URL: ${{ secrets.VITE_MANAGED_PROD_URL }}
           VITE_ANALYTICS_URL: ${{ secrets.VITE_ANALYTICS_URL }}
+          VITE_BEDROCK_PROXY_URL: ${{ secrets.VITE_BEDROCK_PROXY_URL }}
 
       - name: Deploy to S3 (managed)
         run: aws s3 sync dist/ s3://${{ secrets.AWS_MANAGED_S3_BUCKET }} --delete
