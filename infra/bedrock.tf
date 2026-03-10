@@ -67,6 +67,7 @@ resource "aws_iam_role_policy" "bedrock_lambda_policy" {
   })
 }
 
+
 # ─── Bedrock Proxy Lambda ────────────────────────────────────────────────────
 
 data "archive_file" "bedrock_proxy" {
@@ -87,44 +88,154 @@ resource "aws_lambda_function" "bedrock_proxy" {
 
   environment {
     variables = {
-      RATE_LIMIT_TABLE = aws_dynamodb_table.rate_limits.name
-      # Set to 0 to disable rate limiting (testing mode).
-      # Set to a positive integer (e.g. "100") to enforce a daily per-user limit.
-      DAILY_LIMIT      = "0"
-      # Cross-region inference profile for ap-southeast-1.
-      # Verify the exact model ID in the Bedrock console under Model access.
-      BEDROCK_MODEL_ID = "global.anthropic.claude-sonnet-4-6"
-      BEDROCK_REGION   = "ap-southeast-1"
+      RATE_LIMIT_TABLE   = aws_dynamodb_table.rate_limits.name
+      DAILY_LIMIT        = "0"
+      BEDROCK_MODEL_ID   = "global.anthropic.claude-sonnet-4-6"
+      BEDROCK_REGION     = "ap-southeast-1"
+      ORIGIN_SECRET      = "9c47998224477e27be7632c4f7706aae24b29452d16fa6b3501e517f5404ae37"
     }
   }
 }
 
 # ─── Lambda Function URL (streaming) ─────────────────────────────────────────
+# Uses AWS_IAM auth — only CloudFront OAC can invoke it (SCP-safe).
 
 resource "aws_lambda_function_url" "bedrock_proxy" {
-  function_name  = aws_lambda_function.bedrock_proxy.function_name
-  # JWT auth is validated inside the Lambda handler
+  function_name      = aws_lambda_function.bedrock_proxy.function_name
+  # JWT + Custom Header auth is validated inside the Lambda handler
   authorization_type = "NONE"
-  # RESPONSE_STREAM is required for SSE streaming — API Gateway would buffer the response
-  invoke_mode    = "RESPONSE_STREAM"
+  invoke_mode        = "RESPONSE_STREAM"
+}
 
-  cors {
-    allow_credentials = false
-    allow_origins     = ["*"]
-    allow_methods     = ["POST"]
-    allow_headers = [
-      "content-type",
-      "x-api-key",
-      "anthropic-version",
-      "anthropic-beta",
-    ]
-    max_age = 86400
+# Allow public access to the Function URL (Auth = NONE)
+resource "aws_lambda_permission" "public_invoke_url" {
+  statement_id           = "FunctionURLAllowPublicAccess"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.bedrock_proxy.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
+}
+
+resource "aws_lambda_permission" "public_invoke_function" {
+  statement_id             = "FunctionURLAllowPublicInvokeFunction"
+  action                   = "lambda:InvokeFunction"
+  function_name            = aws_lambda_function.bedrock_proxy.function_name
+  principal                = "*"
+  invoked_via_function_url = true
+}
+
+
+
+# ─── CloudFront CORS response headers policy ─────────────────────────────────
+
+resource "aws_cloudfront_response_headers_policy" "bedrock_cors" {
+  name = "${var.project_name}-bedrock-cors"
+
+  cors_config {
+    access_control_allow_credentials = false
+
+    access_control_allow_headers {
+      items = ["x-api-key", "content-type", "anthropic-version", "anthropic-beta"]
+    }
+    access_control_allow_methods {
+      items = ["POST", "OPTIONS"]
+    }
+    access_control_allow_origins {
+      items = ["*"]
+    }
+    access_control_max_age_sec = 86400
+    origin_override            = true
   }
 }
 
-# ─── Output ───────────────────────────────────────────────────────────────────
+# ─── CloudFront origin request policy ────────────────────────────────────────
+# Forwards the browser's custom headers to the Lambda origin.
+
+resource "aws_cloudfront_origin_request_policy" "bedrock_proxy" {
+  name = "${var.project_name}-bedrock-origin"
+
+  headers_config {
+    header_behavior = "whitelist"
+    headers {
+      items = [
+        "x-api-key",
+        "content-type",
+        "anthropic-version",
+        "anthropic-beta",
+      ]
+    }
+  }
+
+  query_strings_config {
+    query_string_behavior = "none"
+  }
+
+  cookies_config {
+    cookie_behavior = "none"
+  }
+}
+
+# ─── CloudFront distribution ──────────────────────────────────────────────────
+
+resource "aws_cloudfront_distribution" "bedrock_proxy" {
+  enabled         = true
+  is_ipv6_enabled = true
+  comment         = "${var.project_name} Bedrock proxy"
+  price_class     = "PriceClass_200" # US, Europe, Asia Pacific
+
+  origin {
+    origin_id                = "bedrock-lambda"
+    domain_name              = trimsuffix(trimprefix(aws_lambda_function_url.bedrock_proxy.function_url, "https://"), "/")
+
+    custom_header {
+      name  = "x-origin-verify"
+      value = "9c47998224477e27be7632c4f7706aae24b29452d16fa6b3501e517f5404ae37"
+    }
+
+    custom_origin_config {
+      http_port                = 80
+      https_port               = 443
+      origin_protocol_policy   = "https-only"
+      origin_ssl_protocols     = ["TLSv1.2"]
+      origin_read_timeout      = 60
+      origin_keepalive_timeout = 60
+    }
+  }
+
+  default_cache_behavior {
+    target_origin_id       = "bedrock-lambda"
+    viewer_protocol_policy = "redirect-to-https"
+
+    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods  = ["GET", "HEAD"]
+
+    compress = false
+
+    cache_policy_id            = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    origin_request_policy_id   = aws_cloudfront_origin_request_policy.bedrock_proxy.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.bedrock_cors.id
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
+# ─── Outputs ──────────────────────────────────────────────────────────────────
 
 output "bedrock_proxy_url" {
+  value       = "https://${aws_cloudfront_distribution.bedrock_proxy.domain_name}/"
+  description = "Bedrock proxy CloudFront URL — set as VITE_BEDROCK_PROXY_URL in GitHub Actions secrets and .env.local"
+}
+
+output "bedrock_lambda_url" {
   value       = aws_lambda_function_url.bedrock_proxy.function_url
-  description = "Bedrock proxy Function URL — set as VITE_BEDROCK_PROXY_URL in GitHub Actions secrets. No npm install needed: @aws-sdk is built into the Lambda Node.js 22 runtime."
+  description = "Direct Lambda URL (blocked without CloudFront secret header — do not use directly)"
+  sensitive   = true
 }

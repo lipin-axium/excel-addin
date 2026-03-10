@@ -492,6 +492,8 @@ export function SettingsPanel() {
         apiType: "anthropic-messages",
         customBaseUrl: BEDROCK_PROXY_URL,
         authMethod: "apikey",
+        useProxy: false,
+        proxyUrl: "",
       });
       setOauthFlow({ step: "idle" });
     } else if (newProvider === "custom") {
@@ -697,8 +699,23 @@ export function SettingsPanel() {
             </>
           )}
 
+          {/* ExcelOS AI — fixed model display */}
+          {isExcelosAi && (
+            <div className="block">
+              <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
+                Model
+              </span>
+              <div
+                className="w-full px-3 py-2 text-sm bg-(--chat-input-bg) border border-(--chat-border) text-(--chat-text-muted)"
+                style={inputStyle}
+              >
+                Claude Sonnet 4.6
+              </div>
+            </div>
+          )}
+
           {/* Model dropdown — built-in providers only */}
-          {!isCustom && provider && (
+          {!isCustom && !isExcelosAi && provider && (
             <label className="block">
               <span className="block text-xs text-(--chat-text-secondary) mb-1.5">
                 Model

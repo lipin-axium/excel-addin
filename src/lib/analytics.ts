@@ -5,10 +5,14 @@ let _email = "";
 
 export async function getOfficeSsoToken(): Promise<string | null> {
   try {
-    return await Office.auth.getAccessToken({
+    const tokenPromise = Office.auth.getAccessToken({
       allowSignInPrompt: false,
       allowConsentPrompt: false,
     });
+    const timeoutPromise = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), 5000),
+    );
+    return await Promise.race([tokenPromise, timeoutPromise]);
   } catch {
     return null;
   }

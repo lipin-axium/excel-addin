@@ -34,6 +34,7 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     root: "src",
+    envDir: "..",
     publicDir: "../public",
 
     build: {
